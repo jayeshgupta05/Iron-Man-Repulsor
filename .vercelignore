@@ -1,0 +1,12 @@
+# Ignore Python scripts and environments so Vercel treats this as a pure static site
+python/
+requirements.txt
+*.py
+venv/
+.env
+__pycache__/
+
+# Ignore heavy 3D assets and scratch development files
+Reference/
+scratch/
+*.log
