@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARK INDUSTRIES // Dual-Hand Holographic AR Repulsor System</title>
+    <script>
+        function sendLog(prefix, data) {
+            try {
+                fetch('/api/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: prefix + ': ' + (typeof data === 'object' ? JSON.stringify(data) : data)
+                }).catch(() => {});
+            } catch(e) {}
+        }
+        window.addEventListener('error', function(e) {
+            var msg = '[ERR] ' + (e.message || (e.target && e.target.src ? 'Failed to load ' + e.target.src : 'Error in DOM'));
+            if (e.filename) msg += ' (' + e.filename + ':' + e.lineno + ':' + e.colno + ')';
+            sendLog('WINDOW_ERROR', msg);
+        }, true);
+        window.addEventListener('unhandledrejection', function(e) {
+            sendLog('PROMISE_REJECT', e.reason ? (e.reason.stack || e.reason.message || e.reason) : 'unknown');
+        });
+        sendLog('HTML_LOADED', 'index.html initialized at ' + new Date().toISOString());
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #010409; 
+            color: #38bdf8; 
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+        }
+        .font-hud { font-family: 'Orbitron', sans-serif; }
+        .font-mono-hud { font-family: 'Share Tech Mono', monospace; }
+        
+        /* Full-screen video stream background */
+        #camera-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror for natural reflection */
+            z-index: 1;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #camera-video.resonator-blackout {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        body.mode-resonator {
+            background-color: #000000 !important;
+        }
+
+        /* 3D WebGL Canvas Layer (Transparent overlay) */
+        #canvas-container { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            z-index: 5; 
+            pointer-events: none;
+        }
+        
+        /* Holographic Sci-Fi Helmet HUD Vignette Overlay */
+        .hud-vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 6;
+            pointer-events: none;
+            background: 
+                radial-gradient(circle at center, transparent 45%, rgba(1, 4, 15, 0.6) 80%, rgba(1, 4, 15, 0.9) 100%),
+                linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 48px 48px, 48px 48px;
+        }
+
+        /* HUD Holographic Panels (Semi-transparent glass) */
+        .hud-panel { 
+            background: rgba(6, 18, 36, 0.45); 
+            border: 1px solid rgba(56, 189, 248, 0.5); 
+            border-radius: 12px; 
+            backdrop-filter: blur(8px); 
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.25), inset 0 0 15px rgba(14, 165, 233, 0.1); 
+            pointer-events: auto;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+        
+        .hud-panel:hover {
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.4);
+        }
+
+        .text-glow { text-shadow: 0 0 10px rgba(56, 189, 248, 0.9), 0 0 20px rgba(14, 165, 233, 0.5); }
+        .text-glow-red { text-shadow: 0 0 10px rgba(244, 63, 94, 0.9), 0 0 25px rgba(225, 29, 72, 0.6); }
+
+        /* Interactive Holographic Action Buttons */
+        .ar-btn {
+            background: rgba(14, 165, 233, 0.25);
+            border: 1.5px solid rgba(56, 189, 248, 0.6);
+            color: #e0f2fe;
+            padding: 0.65rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(4px);
+        }
+        
+        .ar-btn:hover, .ar-btn.hovered {
+            background: rgba(56, 189, 248, 0.6);
+            border-color: #38bdf8;
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.8), inset 0 0 10px #ffffff;
+            transform: scale(1.04);
+        }
+
+        .ar-btn:active, .ar-btn.clicked {
+            background: #38bdf8;
+            color: #020617;
+            transform: scale(0.96);
+            box-shadow: 0 0 40px #38bdf8;
+        }
+
+        .ar-btn-danger {
+            background: rgba(225, 29, 72, 0.3);
+            border-color: rgba(244, 63, 94, 0.7);
+            color: #ffe4e6;
+        }
+        .ar-btn-danger:hover, .ar-btn-danger.hovered {
+            background: rgba(225, 29, 72, 0.75);
+            border-color: #f43f5e;
+            box-shadow: 0 0 30px rgba(244, 63, 94, 0.9);
+        }
+        .ar-btn-danger:active, .ar-btn-danger.clicked {
+            background: #f43f5e;
+            color: #fff;
+        }
+
+        .ar-btn-active {
+            background: rgba(16, 185, 129, 0.4) !important;
+            border-color: #34d399 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 25px rgba(52, 211, 153, 0.8) !important;
+        }
+
+        .ar-btn-disabled {
+            background: rgba(30, 41, 59, 0.5) !important;
+            border-color: rgba(148, 163, 184, 0.25) !important;
+            color: #64748b !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        /* Virtual Fingertip Cursor (Left Hand Selector) */
+        #ar-cursor {
+            position: fixed;
+            width: 48px;
+            height: 48px;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -50%);
+            display: none;
+            transition: none !important;
+            will-change: left, top, transform;
+        }
+        .dwell-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .dwell-bg {
+            fill: rgba(6, 182, 212, 0.12);
+            stroke: rgba(0, 240, 255, 0.45);
+            stroke-width: 2.5;
+        }
+        .dwell-fg {
+            fill: none;
+            stroke: #00f0ff;
+            stroke-width: 3.5;
+            stroke-dasharray: 132;
+            stroke-dashoffset: 132;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 8px #00f0ff);
+            transition: none !important;
+        }
+        #ar-cursor.pinching .dwell-fg {
+            stroke: #f43f5e;
+            filter: drop-shadow(0 0 14px #f43f5e);
+        }
+        #ar-cursor.pinching .dwell-bg {
+            fill: rgba(244, 63, 94, 0.35);
+            stroke: #f43f5e;
+        }
+        .cursor-center-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #ffffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #00f0ff;
+        }
+        .cursor-label {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            font-family: 'Share Tech Mono', monospace;
+            color: #00f0ff;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            text-shadow: 0 0 8px #00f0ff;
+            background: rgba(1, 4, 15, 0.75);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.4);
+        }
+
+        .click-ripple {
+            position: fixed;
+            border: 2px solid #00f0ff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99;
+            animation: rippleAnim 0.4s ease-out forwards;
+        }
+        @keyframes rippleAnim {
+            0% { width: 10px; height: 10px; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { width: 85px; height: 85px; opacity: 0; transform: translate(-50%, -50%) scale(2); border-color: #f43f5e; }
+        }
+
+        /* Optical Resonator custom styles matching exact UI */
+        .resonator-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 9999px;
+            background: #1b263b;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .resonator-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2dd4bf;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(45, 212, 191, 0.85);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        .resonator-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            background: #5eead4;
+        }
+        .resonator-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2dd4bf;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px rgba(45, 212, 191, 0.85);
+        }
+        .hud-panel-resonator {
+            background: rgba(10, 20, 42, 0.92) !important;
+            border: 1px solid rgba(45, 212, 191, 0.35) !important;
+            border-radius: 14px !important;
+            backdrop-filter: blur(14px) !important;
+            box-shadow: 0 0 35px rgba(2, 6, 23, 0.85), inset 0 0 15px rgba(45, 212, 191, 0.06) !important;
+        }
+
+        /* Custom sleek scrollbar for panels */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(2, 6, 23, 0.4);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(45, 212, 191, 0.35);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(45, 212, 191, 0.7);
+        }
+
+        .hovered-slider::-webkit-slider-thumb {
+            transform: scale(1.35) !important;
+            background: #5eead4 !important;
+            box-shadow: 0 0 16px rgba(45, 212, 191, 1) !important;
+        }
+
+        #spectrum-canvas-container.expanded-spectrum {
+            height: 250px !important;
+        }
+        #spectrum-canvas-container.expanded-spectrum #spectrum-canvas {
+            height: 250px !important;
+        }
+
+        /* Exploded Schematic View & Middle-Left Prompt Modal Styles */
+        #exploded-view-prompt {
+            box-shadow: 0 0 45px rgba(56, 189, 248, 0.45), inset 0 0 25px rgba(6, 182, 212, 0.12);
+            animation: slideInPrompt 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideInPrompt {
+            0% { opacity: 0; transform: translateY(-50%) translateX(-30px); }
+            100% { opacity: 1; transform: translateY(-50%) translateX(0); }
+        }
+        .schematic-stage-card {
+            background: rgba(2, 6, 23, 0.90);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+        .schematic-stage-card:hover,
+        .schematic-stage-card.hovered {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+    <!-- MediaPipe Hands & Camera Utils for in-browser real-time vision -->
+    <script src="./camera_utils.js"></script>
+    <script src="./hands.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <!-- 1. FULL-SCREEN BACKGROUND CAMERA VIDEO FEED -->
+    <video id="camera-video" autoplay playsinline muted></video>
+
+    <!-- 2. TRANSPARENT 3D WEBGL OVERLAY LAYER -->
+    <div id="canvas-container"></div>
+
+    <!-- 3. SCI-FI HOLOGRAPHIC VIGNETTE & SCANLINES -->
+    <div class="hud-vignette"></div>
+
+    <!-- 4. VIRTUAL FINGERTIP CURSOR (LEFT ARM SELECTOR) -->
+    <div id="ar-cursor">
+        <svg class="dwell-svg" viewBox="0 0 48 48">
+            <circle class="dwell-bg" cx="24" cy="24" r="21"></circle>
+            <circle id="dwell-circle" class="dwell-fg" cx="24" cy="24" r="21"></circle>
+        </svg>
+        <div class="cursor-center-dot"></div>
+        <div id="cursor-text" class="cursor-label">AIMING</div>
+    </div>
+
+    <!-- 5. FLOATING TRANSPARENT HOLOGRAPHIC HUD CONTROLS -->
+    <div class="fixed inset-0 z-20 pointer-events-none p-5 flex flex-col justify-between">
+        <!-- TOP ROW -->
+        <div class="flex justify-between items-start gap-4 pointer-events-auto">
+            <!-- LEFT COLUMN: SYSTEM TELEMETRY & VIEW CONTROLS + EXPERIMENT CONTROLS -->
+            <div class="flex flex-col gap-3">
+                <!-- TOP LEFT: SYSTEM TELEMETRY & VIEW CONTROLS -->
+                <div id="system-hud" class="hud-panel p-3.5 w-84">
+                    <div class="flex items-center justify-between border-b border-sky-500/40 pb-2 mb-2">
+                        <div class="flex items-center">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] mr-2 animate-pulse"></span>
+                            <h1 class="text-sm font-hud font-bold tracking-wider text-glow uppercase">MARK VII // SIMULATION</h1>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="cam-select" class="hidden text-[10px] bg-slate-900 border border-sky-500/40 text-sky-300 rounded px-1.5 py-0.5 font-mono-hud cursor-pointer" title="Switch Camera"></select>
+                            <button id="btn-swap-hands" class="text-[11px] px-2 py-0.5 rounded border border-sky-500/40 text-sky-400 cursor-pointer hover:bg-sky-500/20 font-mono-hud" title="Swap Active Hand Roles">⇄ SWAP HANDS</button>
+                            <button id="btn-dwell-delay" class="text-[11px] px-2 py-0.5 rounded border border-sky-500/40 text-sky-400 cursor-pointer hover:bg-sky-500/20 font-mono-hud" title="Adjust Selector Dwell Auto-Click Delay (Click to cycle)">⏱️ DELAY: 2.0s</button>
+                            <span id="cam-indicator" class="text-[11px] px-2 py-0.5 rounded border border-sky-500/40 text-sky-400 cursor-pointer hover:bg-sky-500/20 font-mono-hud" title="Camera Status (Click to reconnect/switch)">📷 CAM: INIT</span>
+                            <span id="audio-indicator" class="text-[11px] px-2 py-0.5 rounded border border-sky-500/40 text-sky-400 cursor-pointer hover:bg-sky-500/20 font-mono-hud">SFX: ON</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-xs font-mono-hud text-sky-300 mb-2.5">
+                        <span id="sys-mode-text">MODE-LINKED TRACKING</span>
+                        <span class="text-emerald-400 font-bold">FPS: <span id="val-fps">60</span></span>
+                    </div>
+                    
+                    <!-- PRIMARY MODE SWITCH BUTTONS -->
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <button id="btn-mode-gauntlet" class="ar-btn ar-btn-active text-xs">
+                            🦾 GAUNTLET MODE
+                        </button>
+                        <button id="btn-mode-resonator" class="ar-btn text-xs">
+                            🔬 OPTICAL RESONATOR
+                        </button>
+                    </div>
+                    <a href="./guide.html" target="_blank" id="btn-viva-guide" class="ar-btn text-xs text-center block mt-2 py-1 bg-amber-500/20 border-amber-400 text-amber-300 hover:bg-amber-400 hover:text-black transition-all">
+                        📖 VIVA &amp; PHYSICS GUIDE (TEAM CHEAT SHEET)
+                    </a>
+                </div>
+
+                <!-- EXPERIMENT CONTROLS PANEL (COMPACTED HUD TABLE) -->
+                <div id="resonator-controls-panel" class="hud-panel hud-panel-resonator p-2.5 w-64 max-h-[calc(100vh-3rem)] overflow-y-auto custom-scrollbar flex flex-col gap-1.5 hidden shadow-2xl text-[11px]">
+                    <div class="flex justify-between items-center border-b border-slate-800/80 pb-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse shadow-[0_0_6px_#2dd4bf]"></span>
+                            <h2 class="text-xs font-hud font-bold text-white tracking-wide uppercase">Controls</h2>
+                        </div>
+                        <button id="btn-minimize-controls" class="ar-btn text-[9px] px-1.5 py-0.2 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-mono-hud cursor-pointer" title="Minimize / Expand Controls">_</button>
+                    </div>
+
+                    <div id="resonator-controls-body" class="flex flex-col gap-1.5">
+                        <!-- Slider 1: Cavity Length L -->
+                        <div>
+                            <div class="flex justify-between items-center text-[10px]">
+                                <span class="text-slate-300">Cavity L</span>
+                                <span id="res-val-length" class="font-mono-hud text-[11px] text-teal-300 font-bold">4.826 µm</span>
+                            </div>
+                            <input type="range" id="slider-length" class="resonator-slider interactive-target my-0.5" min="2.000" max="10.000" step="0.001" value="4.826" title="Cavity Length L (Pinch or Drag with Index Finger)">
+                        </div>
+
+                        <!-- Slider 2: Wavelength λ -->
+                        <div>
+                            <div class="flex justify-between items-center text-[10px]">
+                                <span class="text-slate-300">Wavelength λ</span>
+                                <span id="res-val-wavelength" class="font-mono-hud text-[11px] text-teal-300 font-bold">743.6 nm</span>
+                            </div>
+                            <input type="range" id="slider-wavelength" class="resonator-slider interactive-target my-0.5" min="400.0" max="800.0" step="0.1" value="743.6" title="Wavelength λ (Pinch or Drag with Index Finger)">
+                        </div>
+
+                        <!-- Slider 3: Mirror Reflectivity R -->
+                        <div>
+                            <div class="flex justify-between items-center text-[10px]">
+                                <span class="text-slate-300">Reflectivity R</span>
+                                <span id="res-val-reflectivity" class="font-mono-hud text-[11px] text-teal-300 font-bold">37%</span>
+                            </div>
+                            <input type="range" id="slider-reflectivity" class="resonator-slider interactive-target my-0.5" min="5" max="99" step="1" value="37" title="Mirror Reflectivity R (Pinch or Drag with Index Finger)">
+                        </div>
+
+                        <!-- Tune to nearest resonance button -->
+                        <button id="btn-tune-resonance" class="ar-btn w-full py-1 px-2 rounded-md bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold text-[10px] tracking-wide transition-all duration-150 shadow-[0_0_8px_rgba(45,212,191,0.35)] flex items-center justify-center gap-1 active:scale-95 cursor-pointer">
+                            ⚡ Tune Resonance
+                        </button>
+
+                        <!-- STIMULATED EMISSION & LASER GAIN MEDIUM COMPACT TABLE -->
+                        <div class="p-1.5 rounded-lg bg-slate-950/90 border border-teal-500/30 space-y-1 shadow-md">
+                            <div class="flex justify-between items-center border-b border-slate-800/80 pb-0.5">
+                                <span class="text-[9.5px] font-hud font-bold text-teal-300 flex items-center gap-1">
+                                    <span>🔬 GAIN MEDIUM</span>
+                                </span>
+                                <span id="laser-cycle-step-tag" class="text-[8px] px-1 py-0.2 rounded font-bold bg-teal-950 border border-teal-500/30 text-teal-300 uppercase tracking-wider animate-pulse">PUMPING</span>
+                            </div>
+
+                            <!-- Atom Energy States Meter (Compact row) -->
+                            <div class="grid grid-cols-2 gap-1 text-[9px] font-mono-hud">
+                                <div class="px-1 py-0.5 rounded bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-blue-400 flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-blue-400"></span> E₁:</span>
+                                    <span id="res-atom-count-e1" class="font-bold text-white">36</span>
+                                </div>
+                                <div class="px-1 py-0.5 rounded bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-rose-400 flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-rose-400"></span> E₂:</span>
+                                    <span id="res-atom-count-e2" class="font-bold text-rose-300">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons Grid (Compact 2x2) -->
+                            <div class="grid grid-cols-2 gap-1">
+                                <button id="btn-pump-medium" class="ar-btn py-0.5 px-1 rounded bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-[9px] flex items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer" title="Pump energy photons to excite atoms E1 -> E2">
+                                    ⚡ Pump
+                                </button>
+                                <button id="btn-seed-photon" class="ar-btn py-0.5 px-1 rounded bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 font-bold text-[9px] flex items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer" title="Trigger seed photon to initiate stimulated emission">
+                                    ✨ Seed
+                                </button>
+                                <button id="btn-demo-stimulated" class="ar-btn py-0.5 px-1 rounded bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 font-bold text-[9px] flex items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer" title="Show slow-motion stimulated emission: photon strikes excited atom releasing identical photon">
+                                    💥 Demo
+                                </button>
+                                <button id="btn-auto-laser-cycle" class="ar-btn py-0.5 px-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-[9px] flex items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer" title="Run continuous automated laser cycle">
+                                    🔄 <span id="auto-cycle-status">AUTO</span>
+                                </button>
+                            </div>
+
+                            <!-- Real-time Counters -->
+                            <div class="flex justify-between items-center text-[8px] font-mono-hud text-slate-400 pt-0.5">
+                                <span>Stim: <strong id="res-val-stim-events" class="text-teal-300 font-bold">0</strong></span>
+                                <span>Photons: <strong id="res-val-intracavity-photons" class="text-white font-bold">0</strong></span>
+                                <span>Laser: <strong id="res-val-beam-power" class="text-emerald-400 font-bold">OFF</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Laser Energy Charge & Population Inversion Meter (Streamlined Row) -->
+                        <div class="p-1.5 rounded-lg bg-slate-950/80 border border-slate-800 space-y-1">
+                            <div class="flex justify-between items-center text-[9px] font-mono-hud">
+                                <span class="text-slate-300">Charge: <strong id="res-val-charge-pct" class="text-teal-300">0%</strong></span>
+                                <span id="res-charge-status" class="truncate text-[8.5px] text-slate-400">CHARGING...</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="flex-1 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700/60">
+                                    <div id="bar-laser-charge" class="h-full bg-gradient-to-r from-sky-500 via-teal-400 to-emerald-400 rounded-full transition-all duration-100" style="width: 0%"></div>
+                                </div>
+                                <button id="btn-fire-laser-manual" class="ar-btn px-1.5 py-0.5 rounded bg-teal-900/60 hover:bg-teal-800 border border-teal-500/40 text-teal-300 font-bold text-[9px] cursor-pointer transition-all active:scale-95" title="Discharge Stored Laser Energy">💥 FIRE</button>
+                            </div>
+                        </div>
+
+                        <!-- Pause & Reset button row -->
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button id="btn-res-pause" class="ar-btn py-0.5 px-1.5 rounded bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 text-[10px] font-bold transition-all text-center active:scale-95 cursor-pointer">
+                                Pause
+                            </button>
+                            <button id="btn-res-reset" class="ar-btn py-0.5 px-1.5 rounded bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 text-[10px] font-bold transition-all text-center active:scale-95 cursor-pointer">
+                                Reset
+                            </button>
+                        </div>
+
+                        <!-- Compact Formula Footer -->
+                        <div class="pt-0.5 flex justify-between items-center text-[8.5px] font-mono-hud text-slate-500 border-t border-slate-800/80">
+                            <span>2nL = mλ</span>
+                            <span>FSR = c/(2nL)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOP CENTER: ROLE STATUS BANNER (DYNAMIC PER SIMULATION MODE) -->
+            <div id="role-status-banner" class="hud-panel px-6 py-2.5 flex items-center gap-6 border-sky-400/50">
+                <!-- Left Hand Status -->
+                <div id="panel-left-hand" class="flex items-center gap-2 transition-all duration-300">
+                    <span id="icon-left-hand" class="text-lg">🎯</span>
+                    <div>
+                        <div id="label-left-hand" class="text-[10px] font-mono-hud text-sky-300 uppercase">LEFT HAND: UI CONTROLS</div>
+                        <div id="status-left-hand" class="text-xs font-hud font-bold text-amber-400">SEARCHING...</div>
+                    </div>
+                </div>
+
+                <div class="h-8 w-px bg-sky-500/30"></div>
+
+                <!-- Right Hand Status -->
+                <div id="panel-right-hand" class="flex items-center gap-2 transition-all duration-300">
+                    <span id="icon-right-hand" class="text-lg">🦾</span>
+                    <div>
+                        <div id="label-right-hand" class="text-[10px] font-mono-hud text-sky-300 uppercase">RIGHT HAND: WEARING GAUNTLET</div>
+                        <div id="status-right-hand" class="text-xs font-hud font-bold text-amber-400">SEARCHING...</div>
+                    </div>
+                </div>
+
+                <div id="badge-laser-divider" class="h-8 w-px bg-sky-500/30"></div>
+
+                <!-- Laser Interlock Status Badge -->
+                <div id="badge-laser-container" class="flex items-center gap-2">
+                    <span id="badge-laser-icon" class="text-base">🔒</span>
+                    <div>
+                        <div class="text-[9px] font-mono-hud text-slate-300 uppercase">REPULSOR STATUS</div>
+                        <div id="badge-laser-text" class="text-xs font-hud font-bold text-rose-400 animate-pulse">SAFETY LOCKED (DISABLED)</div>
+                    </div>
+                </div>
+
+                <!-- Resonator Laser Dynamics Stage Status (shown in resonator mode) -->
+                <div id="resonator-stage-banner" class="hidden flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span id="res-stage-icon" class="text-base animate-bounce">⚡</span>
+                        <div>
+                            <div class="text-[9px] font-mono-hud text-teal-400 uppercase tracking-wider">LASER PROCESS</div>
+                            <div id="res-stage-title" class="text-xs font-hud font-bold text-teal-300">1. OPTICAL PUMPING</div>
+                        </div>
+                    </div>
+                    <div class="h-6 w-px bg-teal-500/30"></div>
+                    <div id="res-stage-desc" class="text-[11px] font-mono-hud text-slate-300 max-w-[320px] leading-tight truncate">
+                        Energy particles pumped into gain medium: Exciting atoms (E₁ → E₂)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT COLUMN: GAUNTLET TELEMETRY (GAUNTLET MODE) -->
+            <div class="flex flex-col gap-3 items-end">
+                <!-- TOP RIGHT: OPTICAL RESONATOR REAL-TIME TELEMETRY (GAUNTLET MODE) -->
+                <div id="physics-hud" class="hud-panel p-3.5 w-84">
+                    <div class="flex justify-between items-center border-b border-sky-500/40 pb-2 mb-2">
+                        <h2 class="text-xs font-hud font-bold text-glow text-sky-300">OPTICAL RESONATOR</h2>
+                        <span id="inversion-tag" class="text-[10px] px-2 py-0.5 rounded font-bold bg-slate-900 text-gray-400 border border-slate-700">SUB-CRITICAL</span>
+                    </div>
+                    
+                    <div class="space-y-1 font-mono-hud text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-300">PUMP POWER (W):</span>
+                            <span id="val-temp" class="font-bold text-amber-400">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-300">PHOTON COUNT:</span>
+                            <span id="val-photons" class="font-bold text-white">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-300">GROUND STATE (N₁):</span>
+                            <span id="val-n1" class="font-bold text-blue-400">100,000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-300">EXCITED STATE (N₂):</span>
+                            <span id="val-n2" class="font-bold text-pink-400">0</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="flex justify-between text-[10px] text-sky-300 mb-0.5">
+                            <span>INVERSION RATIO</span>
+                            <span id="val-inversion-pct">0%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-950 rounded overflow-hidden border border-slate-700">
+                            <div id="bar-inversion" class="h-full bg-gradient-to-r from-blue-500 via-pink-500 to-amber-400 transition-all duration-100" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPTICAL BENCH VIEW & TRANSMISSION SPECTRUM PANEL (POSITIONED DOWN AT BOTTOM-RIGHT FOR FULL VISIBILITY) -->
+        <div id="resonator-bench-panel" class="hud-panel hud-panel-resonator p-3 w-[430px] max-w-[calc(100vw-2.5rem)] max-h-[calc(100vh-5rem)] overflow-y-auto custom-scrollbar flex flex-col gap-2 hidden shadow-2xl fixed bottom-4 right-4 z-20 pointer-events-auto">
+            <!-- Header with Drag Handle & Actions -->
+            <div id="bench-header-handle" class="flex justify-between items-center border-b border-slate-800/80 pb-1.5 cursor-move" title="Click and drag to reposition table">
+                <div class="flex items-center gap-1.5 text-[10.5px] font-mono-hud text-slate-300 tracking-wide truncate">
+                    <span class="w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_6px_#2dd4bf] animate-pulse"></span>
+                    <span>OPTICAL BENCH TELEMETRY & SPECTRUM</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button id="btn-toggle-field-overlay" class="ar-btn text-[10px] px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium transition-all active:scale-95 cursor-pointer flex items-center gap-1">
+                        <span id="btn-overlay-text">Field overlay</span>
+                    </button>
+                    <button id="btn-minimize-bench" class="ar-btn text-[10px] px-1.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-mono-hud cursor-pointer" title="Minimize / Expand Bench Telemetry">_</button>
+                </div>
+            </div>
+
+            <div id="resonator-bench-body" class="flex flex-col gap-2">
+                <!-- Telemetry Cards (3 cards) -->
+                <div class="grid grid-cols-3 gap-1.5">
+                    <!-- Card 1: Transmitted intensity -->
+                    <div class="p-2 rounded-lg bg-slate-950/70 border border-slate-800 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400 truncate">Transmission</span>
+                        <div class="flex items-baseline gap-0.5 mt-0.5">
+                            <span id="res-val-transmission" class="text-base font-hud font-extrabold text-white">98.6%</span>
+                        </div>
+                        <div class="w-full h-1 bg-slate-900 rounded-full mt-1.5 overflow-hidden">
+                            <div id="bar-res-transmission" class="h-full bg-teal-400 transition-all duration-150" style="width: 98.6%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Mode number 2nL/λ -->
+                    <div class="p-2 rounded-lg bg-slate-950/70 border border-slate-800 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400 truncate">Mode 2nL/λ</span>
+                        <div class="flex items-baseline gap-0.5 mt-0.5">
+                            <span id="res-val-modenumber" class="text-base font-hud font-extrabold text-white">12.980</span>
+                        </div>
+                        <div id="res-tag-resonance" class="text-[9px] font-mono-hud font-semibold text-teal-300 mt-1 truncate">NEAR RESONANCE</div>
+                    </div>
+
+                    <!-- Card 3: Free spectral range -->
+                    <div class="p-2 rounded-lg bg-slate-950/70 border border-slate-800 flex flex-col justify-between">
+                        <span class="text-[10px] text-slate-400 truncate">Free spectral range</span>
+                        <div class="flex items-baseline gap-0.5 mt-0.5">
+                            <span id="res-val-fsr" class="text-base font-hud font-extrabold text-white">31.06 THz</span>
+                        </div>
+                        <div class="text-[9px] font-mono-hud text-slate-400 mt-1 truncate">Δλ ≈ <span id="res-val-fsr-lambda">57.3 nm</span></div>
+                    </div>
+                </div>
+
+                <!-- Transmission Spectrum Chart -->
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center text-xs">
+                        <h3 class="font-hud font-bold text-white tracking-wide text-xs">Transmission spectrum</h3>
+                        <div class="flex items-center gap-1.5">
+                            <button id="btn-expand-spectrum" class="ar-btn text-[10px] px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 border border-teal-500/40 text-teal-300 font-mono-hud flex items-center gap-1 transition-all active:scale-95 cursor-pointer" title="Toggle Fullscreen / Expanded Waveform Graph">
+                                <span>⛶</span> <span id="label-expand-spectrum">EXPAND</span>
+                            </button>
+                            <div class="flex items-center gap-1 text-[11px] text-slate-300 font-mono-hud">
+                                <span class="inline-block w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24]"></span>
+                                <span>Current λ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Container -->
+                    <div id="spectrum-canvas-container" class="relative w-full rounded-lg bg-slate-950/80 border border-slate-800 p-1.5 overflow-hidden transition-all duration-300">
+                        <canvas id="spectrum-canvas" width="440" height="175" class="w-full h-[175px] block cursor-crosshair rounded" title="Transmission Spectrum Graph (Pinch or Tap with Index Finger to Tune Wavelength)"></canvas>
+                    </div>
+                </div>
+
+                <!-- Pedagogical explanation below graph -->
+                <div id="res-pedagogy-text" class="text-[10.5px] text-slate-400 leading-tight">
+                    The cavity contains <span id="res-txt-m" class="text-slate-200 font-bold">12.980</span> half-wavelengths. Integer values give constructive round-trip interference with 100% transmission at resonance.
+                </div>
+
+                <!-- Field Overlay Container (toggled by btn-toggle-field-overlay) -->
+                <div id="field-overlay-container" class="hidden p-2 rounded-lg bg-slate-950/90 border border-teal-500/40 space-y-1.5">
+                    <div class="flex justify-between items-center text-[10px] border-b border-slate-800 pb-1">
+                        <span class="font-hud font-bold text-teal-300">WAVE DECOMPOSITION</span>
+                        <span id="field-overlay-status" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-950 text-teal-300 border border-teal-500/40">CONSTRUCTIVE</span>
+                    </div>
+                    <canvas id="field-overlay-canvas" width="400" height="90" class="w-full h-[90px] block"></canvas>
+                    <div class="grid grid-cols-3 gap-1 text-[9px] font-mono-hud text-slate-300 pt-0.5">
+                        <div class="flex items-center gap-1"><span class="w-2 h-0.5 bg-cyan-400 inline-block"></span> E→ Fwd</div>
+                        <div class="flex items-center gap-1"><span class="w-2 h-0.5 bg-rose-400 inline-block"></span> E← Refl</div>
+                        <div class="flex items-center gap-1"><span class="w-2 h-0.5 bg-teal-300 inline-block"></span> Etot Standing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CENTER BLAST WARNING POPUP (GAUNTLET MODE) -->
+        <div id="blast-warning" class="hud-panel border-red-500 bg-red-950/80 text-red-300 hidden animate-pulse self-center text-center px-8 py-3 pointer-events-auto">
+            <div class="text-xl font-hud font-extrabold tracking-widest text-glow-red">⚡ REPULSOR FULLY CHARGED</div>
+            <div id="blast-warning-sub" class="text-xs font-mono-hud text-red-100 mt-0.5">THRUST PALM FORWARD OR PINCH 'FIRE BLAST'!</div>
+        </div>
+
+        <!-- CENTER OPTICAL LASER READY TO FIRE POPUP BANNER (RESONATOR MODE) -->
+        <div id="laser-fire-prompt" class="hud-panel border-2 border-teal-400 bg-slate-950/95 text-white self-center text-center px-8 py-5 pointer-events-auto hidden shadow-[0_0_55px_rgba(45,212,191,0.6)] backdrop-blur-xl animate-bounce z-30">
+            <div class="flex items-center justify-center gap-2 mb-1.5">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-teal-400 shadow-[0_0_10px_#2dd4bf] animate-ping"></span>
+                <span class="text-xs font-hud font-bold tracking-widest text-teal-300 uppercase">OPTICAL CAVITY CHARGED (100%)</span>
+            </div>
+            <div class="text-xl font-hud font-extrabold tracking-wider text-glow text-teal-200 mb-1">⚡ LASER FULLY CHARGED & READY!</div>
+            <div class="text-xs font-mono-hud text-slate-300 mb-3.5">Population inversion saturated · Constructive resonance locked</div>
+            <button id="btn-fire-laser-blast" class="ar-btn mx-auto text-xs px-8 py-3 bg-gradient-to-r from-teal-400 via-cyan-300 to-emerald-400 text-slate-950 font-hud font-black hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(45,212,191,0.8)] cursor-pointer">
+                💥 CLICK TO FIRE LASER BLAST
+            </button>
+            <div class="text-[10px] text-slate-400 font-mono-hud mt-2.5">[PRESS 'SPACE' OR 'F' TO FIRE]</div>
+        </div>
+
+        <!-- CENTER CAMERA OFFLINE / ACTIVATE POPUP (Only shown if camera stream is blocked) -->
+        <div id="camera-prompt" class="hud-panel border-sky-400 bg-slate-950/90 text-sky-200 self-center text-center px-8 py-5 pointer-events-auto hidden shadow-[0_0_50px_rgba(56,189,248,0.4)]">
+            <div class="text-lg font-hud font-extrabold tracking-wider text-glow text-sky-300 mb-1">📷 WEBCAM FEED OFFLINE</div>
+            <div class="text-xs font-mono-hud text-slate-300 mb-3.5">Click below to activate laptop camera for Mark VII AR tracking</div>
+            <button id="btn-activate-camera" class="ar-btn mx-auto text-xs px-6 py-2.5 bg-sky-500/40 border-sky-400 text-white font-bold hover:scale-105 transition-all">
+                ⚡ ACTIVATE LAPTOP CAMERA
+            </button>
+        </div>
+
+        <!-- TOP CENTER: EXPLODED VIEW (INTERNAL COMPONENTS) HEADER (GAUNTLET MODE) -->
+        <div id="exploded-schematic-header" class="fixed top-20 left-1/2 -translate-x-1/2 z-25 hud-panel px-6 py-1.5 border-sky-400/70 bg-slate-950/85 backdrop-blur-md hidden text-center shadow-[0_0_30px_rgba(56,189,248,0.4)] pointer-events-none transition-all duration-300">
+            <div class="flex items-center justify-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse"></span>
+                <span class="text-xs sm:text-sm font-hud font-extrabold tracking-widest text-glow text-sky-200">
+                    EXPLODED VIEW <span class="text-[11px] text-sky-400 font-mono-hud font-normal">(INTERNAL COMPONENTS)</span>
+                </span>
+            </div>
+            <div class="text-[9px] font-mono-hud text-slate-300 tracking-wider mt-0.5">5-STAGE LASER RESONATOR SCHEMATIC · COHERENT BEAM DECOMPOSITION</div>
+        </div>
+
+        <!-- MIDDLE LEFT: OPTICAL RESONATOR PROMPT MODAL (EXPLODED VIEW) -->
+        <div id="exploded-view-prompt" class="hud-panel fixed left-6 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-3.5 w-72 sm:w-76 border border-cyan-400/60 bg-slate-950/90 text-white shadow-[0_0_30px_rgba(56,189,248,0.35)] backdrop-blur-xl pointer-events-auto hidden transition-all duration-300">
+            <!-- Header Badge & Status -->
+            <div class="flex items-center justify-between border-b border-sky-500/30 pb-1.5 mb-2">
+                <div class="flex items-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse"></span>
+                    <span class="text-[10px] font-mono-hud text-cyan-300 uppercase tracking-wider font-bold">RESONATOR ARCHITECTURE</span>
+                </div>
+                <span class="text-[8.5px] px-1.5 py-0.5 rounded font-mono-hud font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/40">5 STAGES ACTIVE</span>
+            </div>
+
+            <!-- Title & User Question -->
+            <h3 class="text-xs sm:text-sm font-hud font-black tracking-wide text-glow text-cyan-200 mb-0.5">
+                INTERNAL RESONATOR REVEALED
+            </h3>
+            <p class="text-[10.5px] font-hud font-bold text-sky-100 mb-1 leading-snug">
+                Do you want to go to the Optical Resonator mode?
+            </p>
+            <p class="text-[9.5px] font-mono-hud text-slate-300 mb-2.5 leading-relaxed">
+                The gauntlet's internal components function as a laser cavity: Arc Reactor (Pumping Source) excites the Active Medium between the 100% Rear Mirror and the Palm Output Coupler.
+            </p>
+
+            <!-- Action Buttons Grid -->
+            <div class="flex flex-col gap-1.5">
+                <button id="btn-prompt-enter-resonator" class="ar-btn interactive-target w-full py-2 px-2.5 rounded-lg bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 font-hud font-black text-[11px] tracking-wider shadow-[0_0_15px_rgba(45,212,191,0.5)] flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95" title="Switch simulation into full Optical Resonator laboratory">
+                    🔬 ENTER OPTICAL RESONATOR
+                </button>
+                <button id="btn-prompt-assemble-armour" class="ar-btn interactive-target w-full py-1.5 px-2.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-hud font-bold text-[11px] tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95" title="Reassemble Mark VII armor shells and close exploded view">
+                    🛡️ ASSEMBLE ARMOUR
+                </button>
+            </div>
+
+            <div class="text-[8.5px] font-mono-hud text-slate-400 text-center mt-2 border-t border-slate-800 pt-1.5">
+                [PRESS 'R' FOR RESONATOR · 'E' TO ASSEMBLE ARMOUR]
+            </div>
+        </div>
+
+        <!-- BOTTOM: 5-STAGE TECHNICAL CALLOUT CARDS (MATCHING REFERENCE SCHEMATIC) -->
+        <div id="exploded-schematic-stages" class="fixed bottom-16 sm:bottom-18 left-1/2 -translate-x-1/2 z-30 w-[96vw] max-w-6xl grid grid-cols-5 gap-2 sm:gap-2.5 hidden pointer-events-auto transition-all duration-300">
+            <!-- Stage 1: Power Source (Highlighted Amber/Gold) -->
+            <div id="stage-card-1" class="schematic-stage-card interactive-target cursor-pointer p-2 sm:p-2.5 flex flex-col justify-between border-amber-400/60 shadow-[0_0_18px_rgba(245,158,11,0.25)] hover:border-amber-300" title="Stage 1: Power Source (Click/pinch to cycle pump power)">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[9.5px] sm:text-[10px] font-hud font-black text-amber-300 tracking-wider">1. POWER SOURCE</div>
+                    <span class="text-[7.5px] font-mono-hud px-1 py-0.2 rounded bg-amber-950/80 text-amber-400 border border-amber-500/40 font-bold">PUMP</span>
+                </div>
+                <div class="text-[8px] font-mono-hud text-cyan-400 font-bold mb-0.5">(PUMPING MECHANISM)</div>
+                <div class="text-[7.5px] sm:text-[8px] font-mono-hud text-slate-300 space-y-0.5 leading-tight">
+                    <div>• Arc Reactor Core</div>
+                    <div>• Input Pumping Energy</div>
+                    <div class="text-amber-300 font-bold">⚡ PUMP SOURCE ACTIVE</div>
+                </div>
+            </div>
+
+            <!-- Stage 2: The Core Chamber (Neon Pink/Cyan) -->
+            <div id="stage-card-2" class="schematic-stage-card interactive-target cursor-pointer p-2 sm:p-2.5 flex flex-col justify-between border-pink-500/60 shadow-[0_0_18px_rgba(236,72,153,0.25)] hover:border-pink-300" title="Stage 2: Active Medium Chamber (Click/pinch to inject photon)">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[9.5px] sm:text-[10px] font-hud font-black text-pink-300 tracking-wider">2. THE CORE CHAMBER</div>
+                    <span class="text-[7.5px] font-mono-hud px-1 py-0.2 rounded bg-pink-950/80 text-pink-400 border border-pink-500/40 font-bold">MEDIUM</span>
+                </div>
+                <div class="text-[8px] font-mono-hud text-cyan-400 font-bold mb-0.5">(ACTIVE MEDIUM)</div>
+                <div class="text-[7.5px] sm:text-[8px] font-mono-hud text-slate-300 space-y-0.5 leading-tight">
+                    <div>• Ground Atoms (N₁)</div>
+                    <div>• Excited Atoms (N₂)</div>
+                    <div id="stage2-live-rate" class="text-pink-300 font-bold truncate">ΔE → N₂ Excitation</div>
+                </div>
+            </div>
+
+            <!-- Stage 3: Rear Emitter (Sky/Cyan Mirror) -->
+            <div id="stage-card-3" class="schematic-stage-card interactive-target cursor-pointer p-2 sm:p-2.5 flex flex-col justify-between border-sky-400/60 shadow-[0_0_18px_rgba(56,189,248,0.25)] hover:border-sky-300" title="Stage 3: Rear High Reflector Mirror">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[9.5px] sm:text-[10px] font-hud font-black text-sky-300 tracking-wider">3. REAR EMITTER</div>
+                    <span class="text-[7.5px] font-mono-hud px-1 py-0.2 rounded bg-sky-950/80 text-sky-400 border border-sky-500/40 font-bold">R = 1.0</span>
+                </div>
+                <div class="text-[8px] font-mono-hud text-cyan-400 font-bold mb-0.5">(FULLY REFLECTIVE MIRROR)</div>
+                <div class="text-[7.5px] sm:text-[8px] font-mono-hud text-slate-300 space-y-0.5 leading-tight">
+                    <div>• 100% Reflective Mirror</div>
+                    <div>• Constructive Round-Trip</div>
+                    <div class="text-sky-300 font-bold">🪞 100% REFLECTOR</div>
+                </div>
+            </div>
+
+            <!-- Stage 4: Palm Aperture (Electric Teal) -->
+            <div id="stage-card-4" class="schematic-stage-card interactive-target cursor-pointer p-2 sm:p-2.5 flex flex-col justify-between border-teal-400/60 shadow-[0_0_18px_rgba(45,212,191,0.25)] hover:border-teal-300" title="Stage 4: Palm Output Coupler Aperture">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[9.5px] sm:text-[10px] font-hud font-black text-teal-300 tracking-wider">4. PALM APERTURE</div>
+                    <span class="text-[7.5px] font-mono-hud px-1 py-0.2 rounded bg-teal-950/80 text-teal-400 border border-teal-500/40 font-bold">R = 0.90</span>
+                </div>
+                <div class="text-[8px] font-mono-hud text-cyan-400 font-bold mb-0.5">(PARTIALLY REFLECTIVE MIRROR)</div>
+                <div class="text-[7.5px] sm:text-[8px] font-mono-hud text-slate-300 space-y-0.5 leading-tight">
+                    <div>• Output Coupler (R = 0.9)</div>
+                    <div>• Recessed Iris Aperture</div>
+                    <div class="text-teal-300 font-bold">🔆 THRESHOLD LEAKAGE</div>
+                </div>
+            </div>
+
+            <!-- Stage 5: Coherent Output (Emerald Blast) -->
+            <div id="stage-card-5" class="schematic-stage-card interactive-target cursor-pointer p-2 sm:p-2.5 border-emerald-400/70 flex flex-col justify-between shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:border-emerald-300" title="Stage 5: Coherent Laser Output">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[9.5px] sm:text-[10px] font-hud font-black text-emerald-300 tracking-wider">5. COHERENT OUTPUT</div>
+                    <span class="text-[7.5px] font-mono-hud px-1 py-0.2 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 font-bold">BLAST</span>
+                </div>
+                <div class="text-[8px] font-mono-hud text-teal-400 font-bold mb-0.5">(THE BLAST)</div>
+                <div class="text-[7.5px] sm:text-[8px] font-mono-hud text-slate-300 space-y-0.5 leading-tight">
+                    <div>• Coherent Laser Blast</div>
+                    <div>• Escapes at Threshold</div>
+                    <div class="text-emerald-300 font-bold">⚡ STIMULATED EMISSION</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROW: TRANSPARENT INTERACTIVE FLOATING BUTTONS (PINCH-CLICKABLE) -->
+        <div id="gauntlet-bottom-row" class="w-full flex justify-between items-end gap-2.5 pointer-events-auto">
+            <!-- BOTTOM LEFT: EINSTEIN FORMULA DISPLAY & LIVE RATE DYNAMICS GRAPH (COLLAPSIBLE TO PREVENT OVERLAP) -->
+            <div id="einstein-panel" class="hud-panel p-2 sm:p-2.5 w-68 sm:w-76 max-w-sm flex-shrink-0 transition-all duration-300 shadow-xl">
+                <div class="flex justify-between items-center mb-0.5">
+                    <div class="text-[9.5px] font-hud tracking-widest text-sky-400 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></span>
+                        <span>EINSTEIN RATE DYNAMICS</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span id="rate-status-tag" class="text-[8.5px] font-mono-hud text-teal-300 font-bold">EQUILIBRIUM</span>
+                        <button id="btn-toggle-einstein" class="text-[8.5px] px-1.5 py-0.5 rounded border border-sky-400/40 text-sky-300 hover:bg-sky-500/20 font-mono-hud cursor-pointer transition-all" title="Toggle Einstein Dynamics Detail">— MIN</button>
+                    </div>
+                </div>
+                <div id="einstein-panel-details" class="transition-all duration-300 overflow-hidden">
+                    <div class="text-[10px] font-mono-hud text-sky-200">
+                        \[ \frac{dN_2}{dt} = W N_1 - (B_{21} N_2 - B_{12} N_1)\rho(\nu) - A_{21} N_2 \]
+                    </div>
+                    <div id="live-equation" class="mt-0.5 font-mono-hud text-[9.5px] text-pink-300 truncate">
+                        dN₂/dt = 0.00
+                    </div>
+                    <!-- Real-Time Waveform Graph of Population Dynamics & Rate of Change -->
+                    <div class="mt-1 pt-1 border-t border-sky-500/20">
+                        <div class="flex justify-between text-[8px] font-mono-hud text-slate-400 mb-0.5">
+                            <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-rose-500 inline-block shadow-[0_0_4px_#f43f5e]"></span> N₂ (Excited)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-sky-400 inline-block shadow-[0_0_4px_#38bdf8]"></span> dN₂/dt</span>
+                            <span class="text-[7.5px] text-slate-500 font-mono-hud">OSCILLOSCOPE</span>
+                        </div>
+                        <canvas id="rate-graph-canvas" width="280" height="36" class="w-full h-[36px] block rounded bg-slate-950/80 border border-slate-800" title="Einstein Rate Dynamics Oscilloscope"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM CENTER / RIGHT: FLOATING INTERACTIVE ICONS & BUTTONS -->
+            <div class="hud-panel p-2 sm:p-2.5 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 shadow-xl">
+                <button id="btn-explode" class="ar-btn text-xs px-2.5 py-1.5 whitespace-nowrap" title="Toggle Gauntlet Explode Armor Schematic View (or press 'E')">
+                    🛡️ <span id="label-explode">EXPLODE ARMOUR</span>
+                </button>
+                <button id="btn-pump-up" class="ar-btn text-xs px-2.5 py-1.5 whitespace-nowrap" title="Cycle Laser Pump Power">
+                    🔥 <span id="label-pump">PUMP POWER: 0.00</span>
+                </button>
+                <button id="btn-seed" class="ar-btn text-xs px-2.5 py-1.5 whitespace-nowrap" title="Inject Seed Photon (or press 'P')">
+                    ⚛ INJECT PHOTON
+                </button>
+                <!-- SPLIT BLAST & SAFETY CONTROLS: Part 1 = Fire Blast, Part 2 = Safety Enable/Disable -->
+                <div class="flex items-center gap-1.5 p-1 rounded-lg bg-slate-900/70 border border-slate-700/60 shadow-inner">
+                    <button id="btn-blast" class="ar-btn ar-btn-disabled opacity-50 cursor-not-allowed text-xs font-bold px-2.5 py-1.5 whitespace-nowrap" title="Repulsor Blast is DISABLED by Safety Lock (Click toggle or press 'S' to enable)">
+                        🔒 BLAST LOCKED
+                    </button>
+                    <button id="btn-toggle-blast" class="ar-btn text-xs font-bold px-2.5 py-1.5 text-rose-300 border-rose-500/50 bg-rose-950/40 hover:bg-rose-900/60 shadow-[0_0_15px_rgba(244,63,94,0.3)] whitespace-nowrap" title="Repulsor Firing is DISABLED (Click or Press 'S' to Enable)">
+                        <span id="badge-toggle-dot" class="inline-block w-2 h-2 rounded-full bg-rose-500 mr-1 shadow-[0_0_8px_#f43f5e]"></span>
+                        <span id="label-toggle-blast">FIRING: OFF</span>
+                    </button>
+                </div>
+                <button id="btn-reset" class="ar-btn text-xs px-3 py-1.5" title="Reset Simulation Parameters">
+                    ↺ RESET
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Module Application -->
+    <script type="module" src="./app.js?v=pointer_exploded_fix_v10_mark85_smooth_exploded"></script>
+</body>
+</html>

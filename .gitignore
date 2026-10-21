@@ -1,0 +1,16 @@
+# Environment & Virtualenvs
+venv/
+.env
+__pycache__/
+*.pyc
+
+# Heavy external 3D reference assets (>100MB exceeds GitHub push limits)
+Reference/
+
+# Scratch & development logs
+scratch/
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

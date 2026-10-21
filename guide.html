@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARK INDUSTRIES // Optical Resonator & Laser Gauntlet Viva Guide</title>
+    <!-- Tailwind CSS CDN for high-velocity clean utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        stark: {
+                            cyan: '#00f0ff',
+                            sky: '#38bdf8',
+                            gold: '#fbbf24',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            emerald: '#10b981',
+                            dark: '#030712',
+                            panel: 'rgba(15, 23, 42, 0.85)',
+                            border: 'rgba(56, 189, 248, 0.3)'
+                        }
+                    },
+                    fontFamily: {
+                        hud: ['Orbitron', 'sans-serif'],
+                        mono: ['"Share Tech Mono"', 'monospace'],
+                        sans: ['Outfit', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            background-color: #020617;
+            color: #e2e8f0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+                radial-gradient(circle at 100% 50%, rgba(244, 63, 94, 0.06) 0%, transparent 50%),
+                linear-gradient(to bottom, #020617, #050b18, #020617);
+            background-attachment: fixed;
+        }
+        .glow-cyan {
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.65), 0 0 24px rgba(0, 240, 255, 0.35);
+        }
+        .glow-gold {
+            text-shadow: 0 0 12px rgba(245, 158, 11, 0.65);
+        }
+        .hud-border {
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.08), inset 0 0 15px rgba(56, 189, 248, 0.03);
+            backdrop-filter: blur(12px);
+        }
+        .hud-border:hover {
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.18);
+        }
+        .hud-scanline {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+        }
+        .hud-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 9999px;
+            background: #1e293b;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .hud-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #00f0ff;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00f0ff;
+            transition: transform 0.15s ease;
+        }
+        .hud-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        .formula-box {
+            background: rgba(3, 7, 18, 0.9);
+            border-left: 3px solid #00f0ff;
+            box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-cyan-500 selection:text-black min-h-screen">
+
+    <!-- TOP STICKY HUD NAVIGATION -->
+    <header class="sticky top-0 z-50 bg-slate-950/85 backdrop-blur-md border-b border-sky-500/30 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500 shadow-[0_0_8px_#00f0ff]"></span>
+                </span>
+                <a href="#hero" class="text-sm font-hud font-bold tracking-widest text-cyan-400 glow-cyan flex items-center gap-1.5">
+                    STARK OPTICS <span class="text-xs text-slate-400 font-mono">// MARK VII</span>
+                </a>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-6 text-xs font-hud tracking-wider text-slate-300">
+                <a href="#pitch" class="hover:text-cyan-400 transition-colors">30s PITCH</a>
+                <a href="#demo-flow" class="hover:text-cyan-400 transition-colors">DEMO FLOW</a>
+                <a href="#stages" class="hover:text-cyan-400 transition-colors">5 STAGES</a>
+                <a href="#simulator" class="hover:text-cyan-400 transition-colors text-cyan-300">INTERACTIVE SIMULATOR</a>
+                <a href="#physics" class="hover:text-cyan-400 transition-colors">PHYSICS & MATH</a>
+                <a href="#einstein" class="hover:text-cyan-400 transition-colors">EINSTEIN EQS</a>
+                <a href="#viva-qa" class="hover:text-cyan-400 transition-colors text-amber-400">VIVA CHEAT SHEET</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="./index.html" class="px-3.5 py-1.5 rounded bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-hud font-bold tracking-wider hover:bg-cyan-400 hover:text-black transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center gap-2">
+                    <span>🚀 LAUNCH 3D LAB</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WRAPPER -->
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-16">
+
+        <!-- HERO SECTION -->
+        <section id="hero" class="text-center pt-8 pb-6 space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/70 border border-sky-400/40 text-sky-300 text-xs font-mono">
+                <span>⚡ ACADEMIC PRESENTATION &amp; ORAL VIVA MASTER GUIDE</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span class="text-emerald-300">TEAM READY</span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-5xl font-hud font-extrabold tracking-wider text-white">
+                IRON MAN GAUNTLET <span class="text-cyan-400 glow-cyan">OPTICAL RESONATOR</span>
+            </h1>
+            
+            <p class="max-w-3xl mx-auto text-slate-300 text-base sm:text-lg leading-relaxed">
+                How we deconstructed Tony Stark's iconic sci-fi Repulsor Gauntlet into real-world <span class="text-cyan-300 font-semibold">Fabry-Pérot cavity interferometry</span>, <span class="text-rose-400 font-semibold">Einstein rate equations</span>, and touchless <span class="text-emerald-300 font-semibold">6-DOF computer vision</span>.
+            </p>
+
+            <!-- Quick Stat Badges -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto pt-4">
+                <div class="p-3 rounded-lg bg-slate-900/70 border border-cyan-500/20 text-center">
+                    <div class="text-xl font-hud font-bold text-cyan-400">21 3D PTS</div>
+                    <div class="text-[11px] font-mono text-slate-400">MediaPipe Vision Tracking</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-900/70 border border-cyan-500/20 text-center">
+                    <div class="text-xl font-hud font-bold text-amber-400">2nL = mλ</div>
+                    <div class="text-[11px] font-mono text-slate-400">Constructive Resonance</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-900/70 border border-cyan-500/20 text-center">
+                    <div class="text-xl font-hud font-bold text-emerald-400">N₂ &gt; N₁</div>
+                    <div class="text-[11px] font-mono text-slate-400">Population Inversion</div>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-900/70 border border-cyan-500/20 text-center">
+                    <div class="text-xl font-hud font-bold text-rose-400">60 FPS</div>
+                    <div class="text-[11px] font-mono text-slate-400">WebGL 3D Architecture</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: THE 30-SECOND VIVA PITCH -->
+        <section id="pitch" class="scroll-mt-20">
+            <div class="hud-border rounded-xl p-6 sm:p-8 bg-slate-900/80 relative overflow-hidden">
+                <div class="absolute -right-8 -top-8 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-hud font-bold tracking-widest text-cyan-400 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded bg-cyan-400"></span> THE 30-SECOND ELEVATOR PITCH (MEMORIZE THIS!)
+                    </span>
+                    <button onclick="copyPitchText()" class="text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1">
+                        <span id="copy-icon">📋</span> <span id="copy-btn-text">Copy Script</span>
+                    </button>
+                </div>
+
+                <blockquote id="pitch-text" class="text-slate-100 text-base sm:text-lg italic font-sans leading-relaxed border-l-4 border-cyan-400 pl-4 py-1">
+                    "Good morning, Professors. Popular media portrays the Iron Man Repulsor as fictional energy. In our project, we deconstructed the repulsor into its genuine physical counterpart: an optical laser resonator driven by Einstein's stimulated emission rate equations and a Fabry-Pérot interferometric cavity. 
+                    Using real-time computer vision with Google MediaPipe, we mapped 6-DOF hand kinematics to wear the 3D gauntlet, explode it into a 5-stage physical blueprint, and control laser resonance, standing waves, and population inversion with touchless air-gestures."
+                </blockquote>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
+                    <div class="space-y-1">
+                        <div class="text-xs font-hud text-cyan-400">PILLAR 1: COMPUTER VISION</div>
+                        <p class="text-xs text-slate-400">Dual-hand anatomical discrimination, 1:1 fingertip pointer, air-pinch detection, and elevation hysteresis to eliminate sensor noise jitter.</p>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="text-xs font-hud text-amber-400">PILLAR 2: 5-STAGE ENGINEERING</div>
+                        <p class="text-xs text-slate-400">Maps fictional parts directly to laser engineering: Arc Reactor = Pump, Core = Active Medium, Emitter = Mirrors, Blast = Coherent Output.</p>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="text-xs font-hud text-emerald-400">PILLAR 3: QUANTUM OPTICS</div>
+                        <p class="text-xs text-slate-400">Rigorous Airy distribution function $T(\lambda)$, Free Spectral Range, cavity finesse $\mathcal{F}$, and Einstein $A/B$ coefficients for population inversion.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: THE 3-ACT DEMO WALKTHROUGH -->
+        <section id="demo-flow" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                        <span class="text-cyan-400">#01</span> THE 3-ACT DEMONSTRATION WORKFLOW
+                    </h2>
+                    <p class="text-xs font-mono text-slate-400">The exact step-by-step presentation order to show the faculty without getting confused.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- ACT 1 -->
+                <div class="hud-border rounded-xl p-5 bg-slate-900/60 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between text-xs font-hud text-cyan-400 mb-2">
+                            <span>ACT 1: THE HOOK (60s)</span>
+                            <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-mono text-[10px]">ASSEMBLED GAUNTLET</span>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-2">Wear the Armour &amp; Palm Blast</h3>
+                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">Raise Right Hand:</strong> 3D gauntlet snaps to wrist and tracks rotation &amp; finger curl.</li>
+                            <li><strong class="text-white">Raise Left Hand:</strong> Activates holographic pointer (<span class="font-mono text-cyan-400">#ar-cursor</span>) for UI buttons.</li>
+                            <li><strong class="text-white">Push Palm Forward:</strong> Palm angle normal triggers the repulsor arc bloom and audio shockwave blast!</li>
+                        </ul>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-[11px] font-mono text-cyan-300">
+                        💬 <em>"Notice the gauntlet only attaches to the right hand, while the left hand controls holographic UI parameters."</em>
+                    </div>
+                </div>
+
+                <!-- ACT 2 -->
+                <div class="hud-border rounded-xl p-5 bg-slate-900/60 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between text-xs font-hud text-amber-400 mb-2">
+                            <span>ACT 2: ENGINEERING (90s)</span>
+                            <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 font-mono text-[10px]">DISASSEMBLED VIEW</span>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-2">Explode Armour into 5 Stages</h3>
+                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">Click "EXPLODE ARMOUR":</strong> Mechanical servo sound plays; gauntlet separates along horizontal axis.</li>
+                            <li><strong class="text-white">Show 5 Callout Cards:</strong> Each card on the bottom highlights a physical laser component.</li>
+                            <li><strong class="text-white">Touchless Selection:</strong> Point at cards with your finger; dwell for 2.0s to auto-select or air-pinch to click!</li>
+                        </ul>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-[11px] font-mono text-amber-300">
+                        💬 <em>"The gauntlet isn't magic—it disassembles into an optical pumping chamber, gain crystal, and cavity mirrors."</em>
+                    </div>
+                </div>
+
+                <!-- ACT 3 -->
+                <div class="hud-border rounded-xl p-5 bg-slate-900/60 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between text-xs font-hud text-emerald-400 mb-2">
+                            <span>ACT 3: THE PHYSICS LAB (2 min)</span>
+                            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono text-[10px]">OPTICAL RESONATOR</span>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-2">Fabry-Pérot &amp; Einstein Dynamics</h3>
+                        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                            <li><strong class="text-white">Click "ENTER RESONATOR":</strong> Transitions into the 3D optical bench.</li>
+                            <li><strong class="text-white">Move Sliders:</strong> Adjust Cavity Length $L$ and Wavelength $\lambda$ to demonstrate Airy peaks.</li>
+                            <li><strong class="text-white">Hit "TUNE TO RESONANCE":</strong> System snaps $2nL=m\lambda$, transmission leaps to 100%, and laser fires!</li>
+                        </ul>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-[11px] font-mono text-emerald-300">
+                        💬 <em>"Here we simulate the quantum atoms, standing wave nodes, and Airy transmission comb in real time."</em>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: THE 5 GAUNTLET STAGES (INTERACTIVE ANATOMY) -->
+        <section id="stages" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                    <span class="text-cyan-400">#02</span> THE 5 DISASSEMBLED STAGES: SCI-FI VS. REAL PHYSICS
+                </h2>
+                <p class="text-xs font-mono text-slate-400">Click any stage below to inspect how Tony Stark's armor translates to textbook laser engineering.</p>
+            </div>
+
+            <!-- Stage Selector Tabs -->
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="stage-tabs">
+                <button onclick="selectStage(1)" id="tab-stage-1" class="p-3 rounded-lg border border-cyan-400 bg-cyan-950/60 text-left transition-all">
+                    <div class="text-[10px] font-mono text-cyan-300">STAGE 1</div>
+                    <div class="text-xs font-hud font-bold text-white">POWER SOURCE</div>
+                </button>
+                <button onclick="selectStage(2)" id="tab-stage-2" class="p-3 rounded-lg border border-slate-800 bg-slate-900/60 text-left hover:border-slate-700 transition-all">
+                    <div class="text-[10px] font-mono text-slate-400">STAGE 2</div>
+                    <div class="text-xs font-hud font-bold text-white">CORE CHAMBER</div>
+                </button>
+                <button onclick="selectStage(3)" id="tab-stage-3" class="p-3 rounded-lg border border-slate-800 bg-slate-900/60 text-left hover:border-slate-700 transition-all">
+                    <div class="text-[10px] font-mono text-slate-400">STAGE 3</div>
+                    <div class="text-xs font-hud font-bold text-white">REAR EMITTER</div>
+                </button>
+                <button onclick="selectStage(4)" id="tab-stage-4" class="p-3 rounded-lg border border-slate-800 bg-slate-900/60 text-left hover:border-slate-700 transition-all">
+                    <div class="text-[10px] font-mono text-slate-400">STAGE 4</div>
+                    <div class="text-xs font-hud font-bold text-white">PALM APERTURE</div>
+                </button>
+                <button onclick="selectStage(5)" id="tab-stage-5" class="p-3 rounded-lg border border-slate-800 bg-slate-900/60 text-left hover:border-slate-700 transition-all">
+                    <div class="text-[10px] font-mono text-slate-400">STAGE 5</div>
+                    <div class="text-xs font-hud font-bold text-white">COHERENT BEAM</div>
+                </button>
+            </div>
+
+            <!-- Dynamic Stage Detail Card -->
+            <div id="stage-detail-box" class="hud-border rounded-xl p-6 bg-slate-900/80 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span id="stage-badge" class="px-2 py-0.5 rounded text-[11px] font-hud font-bold bg-cyan-950 text-cyan-300 border border-cyan-400/50">STAGE 1</span>
+                        <h3 id="stage-title" class="text-lg font-hud font-bold text-white">ARC REACTOR (THE PUMPING SOURCE)</h3>
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-start gap-2">
+                            <span class="text-rose-400 font-bold shrink-0">Marvel Sci-Fi:</span>
+                            <span id="stage-lore" class="text-slate-300">Miniaturized clean fusion reactor powering the suit repulsor coils with multi-gigawatt energy.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-cyan-400 font-bold shrink-0">Real Physics:</span>
+                            <span id="stage-physics" class="text-slate-200">The <strong>Optical / Electrical Pumping Mechanism</strong> ($W$). Excites valence electrons from ground state $E_1$ to upper metastable level $E_2$.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-amber-400 font-bold shrink-0">Key Formula:</span>
+                            <span id="stage-formula" class="font-mono text-amber-300 bg-slate-950 px-2 py-0.5 rounded text-xs">Pumping Rate = W · N₁ (Required for N₂ &gt; N₁)</span>
+                        </div>
+                    </div>
+
+                    <p id="stage-viva-tip" class="text-xs text-slate-400 italic border-l-2 border-cyan-400 pl-3">
+                        💡 <strong>Viva Tip:</strong> "If faculty asks what the Arc Reactor does physically, say: <em>It provides the external energy pumping $W$ to create population inversion in the gain medium.</em>"
+                    </p>
+                </div>
+
+                <div class="p-5 rounded-lg bg-slate-950 border border-slate-800 flex flex-col justify-center items-center text-center space-y-3">
+                    <div id="stage-graphic-icon" class="text-5xl">⚡</div>
+                    <div id="stage-graphic-name" class="font-hud text-sm text-cyan-300">PUMPING MECHANISM</div>
+                    <div id="stage-graphic-desc" class="text-xs text-slate-400 max-w-xs">Supplies continuous energy flux so atoms stay inverted above threshold.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: LIVE INTERACTIVE OPTICAL RESONATOR SIMULATOR -->
+        <section id="simulator" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                        <span class="text-cyan-400">#03</span> LIVE INTERACTIVE OPTICAL RESONATOR SIMULATOR
+                    </h2>
+                    <p class="text-xs font-mono text-slate-400">Play with cavity length, wavelength, and reflectivity in real time to observe resonance peaks and standing waves.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="setSimTab('spectrum')" id="btn-tab-spectrum" class="px-3 py-1 rounded text-xs font-hud font-bold bg-cyan-500 text-black">
+                        SPECTRUM T(λ)
+                    </button>
+                    <button onclick="setSimTab('field')" id="btn-tab-field" class="px-3 py-1 rounded text-xs font-hud font-bold bg-slate-800 text-slate-300 hover:text-white">
+                        FIELD OVERLAY E(z)
+                    </button>
+                </div>
+            </div>
+
+            <!-- SIMULATOR PANEL -->
+            <div class="hud-border rounded-xl p-5 sm:p-6 bg-slate-900/90 space-y-6">
+                <!-- Canvas Area -->
+                <div class="relative rounded-lg overflow-hidden bg-[#050b18] border border-sky-500/20 shadow-inner">
+                    <canvas id="sim-canvas" class="w-full h-56 sm:h-64 block cursor-crosshair"></canvas>
+                    
+                    <!-- Live Canvas Overlay Badges -->
+                    <div class="absolute top-3 left-4 flex items-center gap-2 pointer-events-none">
+                        <span id="live-resonance-badge" class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="live-badge-text">RESONANCE (m = 13.00) ✨</span>
+                        </span>
+                        <span id="live-trans-badge" class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-900/90 text-cyan-300 border border-cyan-500/30">
+                            Transmission: 99.4%
+                        </span>
+                    </div>
+
+                    <div class="absolute top-3 right-4 text-[10px] font-mono text-slate-400 pointer-events-none hidden sm:block">
+                        CLICK SPECTRUM TO TUNE λ DIRECTLY
+                    </div>
+                </div>
+
+                <!-- Sliders & Real-Time Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                    <!-- Slider 1: Cavity Length L -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-hud text-slate-300 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Cavity Length (L)
+                            </span>
+                            <span id="lbl-sim-l" class="font-mono text-amber-400 font-bold">4.826 µm</span>
+                        </div>
+                        <input type="range" id="sim-slider-l" min="0.500" max="10.000" step="0.001" value="4.826" class="hud-slider w-full">
+                        <p class="text-[11px] text-slate-400">Physical spacing between mirrors $M_1$ and $M_2$. Increasing $L$ contracts FSR.</p>
+                    </div>
+
+                    <!-- Slider 2: Wavelength lambda -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-hud text-slate-300 flex items-center gap-1.5">
+                                <span id="wavelength-color-dot" class="w-2 h-2 rounded-full bg-rose-500"></span> Wavelength (λ)
+                            </span>
+                            <span id="lbl-sim-lambda" class="font-mono font-bold text-rose-400">743.6 nm</span>
+                        </div>
+                        <input type="range" id="sim-slider-lambda" min="400.0" max="800.0" step="0.1" value="743.6" class="hud-slider w-full">
+                        <p class="text-[11px] text-slate-400">Laser emission color ($400\text{ nm}$ violet to $800\text{ nm}$ red). Matches marker dot.</p>
+                    </div>
+
+                    <!-- Slider 3: Reflectivity R -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-hud text-slate-300 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Reflectivity (R)
+                            </span>
+                            <span id="lbl-sim-r" class="font-mono text-cyan-400 font-bold">37%</span>
+                        </div>
+                        <input type="range" id="sim-slider-r" min="1" max="99" step="1" value="37" class="hud-slider w-full">
+                        <p class="text-[11px] text-slate-400">Higher $R$ produces razor-sharp resonant peaks and ultra-high cavity finesse.</p>
+                    </div>
+                </div>
+
+                <!-- Telemetry Metrics Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4 border-t border-slate-800">
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-center">
+                        <div class="text-[10px] font-mono text-slate-400">MODE NUMBER (m)</div>
+                        <div id="sim-val-m" class="text-sm font-mono font-bold text-amber-400">12.980</div>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-center">
+                        <div class="text-[10px] font-mono text-slate-400">FSR (FREQUENCY)</div>
+                        <div id="sim-val-fsr-thz" class="text-sm font-mono font-bold text-cyan-400">31.06 THz</div>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-center">
+                        <div class="text-[10px] font-mono text-slate-400">FSR (Δλ)</div>
+                        <div id="sim-val-fsr-nm" class="text-sm font-mono font-bold text-cyan-400">57.3 nm</div>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-center">
+                        <div class="text-[10px] font-mono text-slate-400">COEFF FINESSE (F)</div>
+                        <div id="sim-val-finesse" class="text-sm font-mono font-bold text-purple-400">3.73</div>
+                    </div>
+                    <div class="p-2.5 rounded bg-slate-950/80 border border-slate-800 text-center">
+                        <div class="text-[10px] font-mono text-slate-400">TRANSMISSION (T)</div>
+                        <div id="sim-val-trans" class="text-sm font-mono font-bold text-emerald-400">98.6%</div>
+                    </div>
+                </div>
+
+                <!-- Instant Preset Buttons -->
+                <div class="flex flex-wrap items-center gap-2 pt-2">
+                    <span class="text-xs font-mono text-slate-400 mr-2">QUICK EXPERIMENTS:</span>
+                    <button onclick="applyPreset('resonance')" class="px-2.5 py-1 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-mono hover:bg-emerald-900 transition-colors">
+                        ✨ Snap to 100% Resonance
+                    </button>
+                    <button onclick="applyPreset('highFinesse')" class="px-2.5 py-1 rounded bg-purple-950/80 border border-purple-500/40 text-purple-300 text-xs font-mono hover:bg-purple-900 transition-colors">
+                        🎯 Sharp Laser Finesse (R=92%)
+                    </button>
+                    <button onclick="applyPreset('greenLaser')" class="px-2.5 py-1 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono hover:bg-cyan-900 transition-colors">
+                        🟢 532 nm Green Laser Mode
+                    </button>
+                    <button onclick="applyPreset('reset')" class="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono hover:bg-slate-700 transition-colors">
+                        ↺ Reset Parameters
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: THE CORE PHYSICS & FORMULAS MADE SIMPLE -->
+        <section id="physics" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                    <span class="text-cyan-400">#04</span> THE CORE PHYSICS &amp; FORMULAS EXPLAINED SIMPLY
+                </h2>
+                <p class="text-xs font-mono text-slate-400">Four essential laser physics concepts broken down with intuitive real-world analogies.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Concept 1 -->
+                <div class="formula-box rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-hud font-bold text-cyan-400">1. THE RESONANCE CONDITION ($2nL = m\lambda$)</h3>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300">BOUNDARY MATCH</span>
+                    </div>
+                    <div class="text-xs text-slate-300 space-y-2">
+                        <p><strong>The Equation:</strong> $2nL = m\lambda \implies m = \frac{2nL}{\lambda}$</p>
+                        <p><strong>The Simple Analogy (The Guitar String):</strong> When you pluck a guitar string of length $L$, only specific musical notes (harmonics) can resonate because the string is pinned at both ends. Light trapped between two mirrors behaves identically: only waves whose half-wavelengths fit an exact integer number of times ($m=1, 2, 3\dots$) sustain constructive interference.</p>
+                        <p><strong>Viva Answer:</strong> <em>"If $m$ is an exact integer, waves reinforce each other after every round trip. If $m$ has a fraction, waves cancel each other out destructively."</em></p>
+                    </div>
+                </div>
+
+                <!-- Concept 2 -->
+                <div class="formula-box rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-hud font-bold text-amber-400">2. FREE SPECTRAL RANGE (FSR)</h3>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300">PEAK SPACING</span>
+                    </div>
+                    <div class="text-xs text-slate-300 space-y-2">
+                        <p><strong>The Equation:</strong> $\Delta\nu_{\text{FSR}} = \frac{c}{2nL} \quad \text{or} \quad \Delta\lambda_{\text{FSR}} \approx \frac{\lambda^2}{2nL}$</p>
+                        <p><strong>The Simple Analogy (Piano Keys):</strong> FSR is the distance between two consecutive resonant peaks on the graph (e.g. between $m=12$ and $m=13$).</p>
+                        <p><strong>How it behaves:</strong>
+                            <br>• <strong>Shorter Cavity ($L \downarrow$):</strong> Peaks spread far apart.
+                            <br>• <strong>Longer Cavity ($L \uparrow$):</strong> Peaks pack tightly together like closely spaced teeth on a comb.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Concept 3 -->
+                <div class="formula-box rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-hud font-bold text-purple-400">3. REFLECTIVITY &amp; CAVITY FINESSE ($\mathcal{F}$)</h3>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300">SHARPNESS / Q-FACTOR</span>
+                    </div>
+                    <div class="text-xs text-slate-300 space-y-2">
+                        <p><strong>The Equation:</strong> $F = \frac{4R}{(1-R)^2}, \quad \mathcal{F} = \frac{\pi\sqrt{R}}{1-R}$</p>
+                        <p><strong>The Simple Analogy (Filter Sieve):</strong>
+                            <br>• <strong>Low $R$ ($30\%$):</strong> Wide sieve holes. Peaks are broad, muddy hills.
+                            <br>• <strong>High $R$ ($95\%$):</strong> Ultra-fine mesh. Peaks become razor-sharp needle spikes with extreme wavelength purity.
+                        </p>
+                        <p><strong>Viva Answer:</strong> <em>"Higher mirror reflectivity traps photons for more round trips, multiplying the selectivity and quality factor (Q-factor) of the cavity."</em></p>
+                    </div>
+                </div>
+
+                <!-- Concept 4 -->
+                <div class="formula-box rounded-xl p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-hud font-bold text-emerald-400">4. AIRY TRANSMISSION FUNCTION ($T$)</h3>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300">NET EFFICIENCY</span>
+                    </div>
+                    <div class="text-xs text-slate-300 space-y-2">
+                        <p><strong>The Equation:</strong> $T = \frac{1}{1 + F \sin^2(m\pi)}$</p>
+                        <p><strong>The Big Mystery Faculty Love to Ask:</strong> <em>"If both mirrors reflect 95% of light, how can 100% of light pass through at resonance?"</em></p>
+                        <p><strong>The Mind-Blowing Answer:</strong> Because inside the cavity, light builds up to over $20\times$ its incoming brightness through constructive interference! Even though only $5\%$ leaks out through $M_2$, $5\% \times 20 = 100\%$. Destructive cancellation in the reverse direction eliminates back-reflection completely!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: EINSTEIN RATE EQUATIONS -->
+        <section id="einstein" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                    <span class="text-cyan-400">#05</span> EINSTEIN'S LASER RATE EQUATIONS &amp; GAIN MEDIUM
+                </h2>
+                <p class="text-xs font-mono text-slate-400">Why Tony Stark's gauntlet needs an active medium, and how light amplification actually happens.</p>
+            </div>
+
+            <div class="hud-border rounded-xl p-6 bg-slate-900/80 space-y-6">
+                <!-- Atomic Energy Levels Diagram -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2 text-center">
+                        <div class="text-xs font-hud text-rose-400">1. SPONTANEOUS EMISSION</div>
+                        <div class="text-2xl">⏳ ⚛ ➔ ✨</div>
+                        <div class="font-mono text-xs text-amber-300">Rate = A₂₁ · N₂</div>
+                        <p class="text-[11px] text-slate-400">Excited atom randomly decays on its own, spitting out an uncontrolled photon in a random direction (incoherent light like a lightbulb).</p>
+                    </div>
+
+                    <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2 text-center">
+                        <div class="text-xs font-hud text-cyan-400">2. STIMULATED ABSORPTION</div>
+                        <div class="text-2xl">✨ + ⚛(E₁) ➔ ⚛*(E₂)</div>
+                        <div class="font-mono text-xs text-amber-300">Rate = B₁₂ · ρ · N₁</div>
+                        <p class="text-[11px] text-slate-400">A ground-state atom eats a passing photon and jumps to the excited state. This causes optical loss/attenuation.</p>
+                    </div>
+
+                    <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2 text-center">
+                        <div class="text-xs font-hud text-emerald-400">3. STIMULATED EMISSION (LASER!)</div>
+                        <div class="text-2xl">✨ + ⚛*(E₂) ➔ ✨✨ + ⚛</div>
+                        <div class="font-mono text-xs text-amber-300">Rate = B₂₁ · ρ · N₂</div>
+                        <p class="text-[11px] text-slate-400">A passing photon tickles an excited atom, forcing it to drop and emit a <strong>twin clone photon</strong> with exact same phase, color, and direction!</p>
+                    </div>
+                </div>
+
+                <!-- Rate Equation Summary Box -->
+                <div class="p-4 rounded-lg bg-slate-950 border-l-4 border-emerald-400 space-y-2">
+                    <div class="text-xs font-hud font-bold text-white flex items-center justify-between">
+                        <span>THE COMPLETE EINSTEIN DIFFERENTIAL EQUATION IN OUR CODE:</span>
+                        <span class="text-emerald-400 font-mono text-[11px]">SOLVED PER FRAME</span>
+                    </div>
+                    <div class="font-mono text-sm sm:text-base text-emerald-300 overflow-x-auto py-1">
+                        $$\frac{dN_2}{dt} = \underbrace{W \cdot N_1}_{\text{Pumping (Arc Reactor)}} - \underbrace{B_{21}\rho \cdot (N_2 - N_1)}_{\text{Stimulated Transitions}} - \underbrace{A_{21} \cdot N_2}_{\text{Spontaneous Decay}}$$
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        <strong>Population Inversion Condition:</strong> Notice the term $(N_2 - N_1)$. Under normal room temperature, $N_1 \gg N_2$ (most atoms are ground), so absorption wins and laser beams cannot form. But when the Arc Reactor pump power $W$ pushes <strong>$N_2 &gt; N_1$</strong>, net stimulated emission becomes positive, triggering the photon avalanche that powers the repulsor blast!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: INTERACTIVE VIVA CHEAT SHEET & FLASHCARDS -->
+        <section id="viva-qa" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                        <span class="text-amber-400">#06</span> INTERACTIVE VIVA PRACTICE &amp; ORAL DEFENSE TRAINER
+                    </h2>
+                    <p class="text-xs font-mono text-slate-400">Click any card below to test your understanding before tomorrow's viva examination.</p>
+                </div>
+                <div class="flex gap-2 text-xs font-mono">
+                    <button onclick="filterQA('all')" id="btn-filter-all" class="px-2.5 py-1 rounded bg-amber-500 text-black font-bold">ALL</button>
+                    <button onclick="filterQA('physics')" id="btn-filter-physics" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:text-white">PHYSICS</button>
+                    <button onclick="filterQA('optics')" id="btn-filter-optics" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:text-white">OPTICS</button>
+                    <button onclick="filterQA('code')" id="btn-filter-code" class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:text-white">VISION/CODE</button>
+                </div>
+            </div>
+
+            <!-- Flashcards Grid -->
+            <div class="space-y-3" id="viva-container">
+                <!-- Question 1 -->
+                <div class="qa-item physics hud-border rounded-lg p-4 bg-slate-900/70 cursor-pointer" onclick="toggleAnswer(1)">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-hud font-bold text-cyan-300 flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400">Q1</span>
+                            Why does transmission reach 100% at resonance even if mirrors reflect 95% of light?
+                        </span>
+                        <span id="qa-arrow-1" class="text-xs text-slate-400">▼</span>
+                    </div>
+                    <div id="qa-ans-1" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300 space-y-1.5">
+                        <p class="font-bold text-emerald-400">Quick 1-Sentence Answer:</p>
+                        <p>Constructive interference causes light to build up inside the cavity to over $20\times$ incident brightness, so the small fraction leaking through equals 100% of the input beam!</p>
+                        <p class="font-bold text-amber-300">Detailed Viva Answer:</p>
+                        <p>At resonance, round-trip phase shift is an exact integer multiple of $2\pi$. The infinite series of internal bounces adds constructively in the forward direction and cancels out destructively in the reverse direction, meaning zero light is reflected backward and 100% passes forward.</p>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="qa-item optics hud-border rounded-lg p-4 bg-slate-900/70 cursor-pointer" onclick="toggleAnswer(2)">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-hud font-bold text-cyan-300 flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400">Q2</span>
+                            What is the physical meaning of the Mode Number $m$?
+                        </span>
+                        <span id="qa-arrow-2" class="text-xs text-slate-400">▼</span>
+                    </div>
+                    <div id="qa-ans-2" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300 space-y-1.5">
+                        <p class="font-bold text-emerald-400">Quick 1-Sentence Answer:</p>
+                        <p>$m$ is the exact number of half-wavelengths ($\lambda / 2$) of light standing between the two cavity mirrors.</p>
+                        <p class="font-bold text-amber-300">Detailed Viva Answer:</p>
+                        <p>From the boundary condition $L = m \cdot (\lambda / 2n)$, $m$ also directly equals the number of stationary electric field nodes ($E=0$) formed along the cavity axis, as visualized by the white dots on our Field Overlay canvas.</p>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="qa-item physics hud-border rounded-lg p-4 bg-slate-900/70 cursor-pointer" onclick="toggleAnswer(3)">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-hud font-bold text-cyan-300 flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400">Q3</span>
+                            What happens if you make both mirrors 100% reflective ($R_1 = R_2 = 1.0$)?
+                        </span>
+                        <span id="qa-arrow-3" class="text-xs text-slate-400">▼</span>
+                    </div>
+                    <div id="qa-ans-3" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300 space-y-1.5">
+                        <p class="font-bold text-emerald-400">Quick 1-Sentence Answer:</p>
+                        <p>The cavity would store light forever without loss, but you could NEVER emit a laser beam because zero light could escape!</p>
+                        <p class="font-bold text-amber-300">Detailed Viva Answer:</p>
+                        <p>A practical laser requires an <strong>Output Coupler</strong> with reflectivity slightly below 1.0 (typically $R_2 \approx 85\% - 95\%$) so that a controlled fraction of coherent photons can exit as the useful repulsor beam.</p>
+                    </div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="qa-item optics hud-border rounded-lg p-4 bg-slate-900/70 cursor-pointer" onclick="toggleAnswer(4)">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-hud font-bold text-cyan-300 flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400">Q4</span>
+                            What does Free Spectral Range (FSR) represent and how does cavity length affect it?
+                        </span>
+                        <span id="qa-arrow-4" class="text-xs text-slate-400">▼</span>
+                    </div>
+                    <div id="qa-ans-4" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300 space-y-1.5">
+                        <p class="font-bold text-emerald-400">Quick 1-Sentence Answer:</p>
+                        <p>FSR is the frequency or wavelength spacing between two consecutive resonance peaks ($\Delta\lambda = \lambda^2 / 2nL$).</p>
+                        <p class="font-bold text-amber-300">Detailed Viva Answer:</p>
+                        <p>Longer cavities have smaller FSR (peaks pack closer together). Shorter cavities have larger FSR (peaks spread far apart). In micro-cavities ($L \sim 1\,\mu\text{m}$), FSR is so wide that only a single longitudinal mode can exist.</p>
+                    </div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="qa-item code hud-border rounded-lg p-4 bg-slate-900/70 cursor-pointer" onclick="toggleAnswer(5)">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-hud font-bold text-cyan-300 flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400">Q5</span>
+                            How did you fix the pointer glitching in disassembled mode?
+                        </span>
+                        <span id="qa-arrow-5" class="text-xs text-slate-400">▼</span>
+                    </div>
+                    <div id="qa-ans-5" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300 space-y-1.5">
+                        <p class="font-bold text-emerald-400">Quick 1-Sentence Answer:</p>
+                        <p>We implemented <strong>sticky hand arbitration with elevation hysteresis ($\Delta Y &gt; 0.14$) and a 400ms debounce window</strong> to stop camera noise from flipping between left and right hands.</p>
+                        <p class="font-bold text-amber-300">Detailed Viva Answer:</p>
+                        <p>Raw MediaPipe coordinates fluctuate by $\pm 0.005$ due to camera sensor noise. Per-frame height comparison was flipping hand assignments 60 times a second, dragging the cursor across the screen. Hysteresis locks to the active hand, while card-aware stabilization keeps large stage cards from magnetically jerking the reticle.</p>
+                    </div>
+                </div>
+
+                <!-- Question 6 -->
+                <div class="qa-item physics hud-border rounded-lg p-4 bg-slate-900/70 cursor-pointer" onclick="toggleAnswer(6)">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-hud font-bold text-cyan-300 flex items-center gap-2">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-950 text-cyan-400">Q6</span>
+                            Why can't you build a 2-level steady-state laser? Why do real lasers need 3 or 4 levels?
+                        </span>
+                        <span id="qa-arrow-6" class="text-xs text-slate-400">▼</span>
+                    </div>
+                    <div id="qa-ans-6" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-300 space-y-1.5">
+                        <p class="font-bold text-emerald-400">Quick 1-Sentence Answer:</p>
+                        <p>In a 2-level system, stimulated emission equals absorption ($B_{21} = B_{12}$), so pumping can at best reach 50/50 transparency, never inversion.</p>
+                        <p class="font-bold text-amber-300">Detailed Viva Answer:</p>
+                        <p>Once $N_2 = N_1$, the rate of atoms pumped up equals the rate stimulated back down. A 3-level or 4-level laser (like Nd:YAG) solves this by pumping to an upper level that decays ultra-rapidly into a metastable state with a long lifetime, enabling massive population buildup ($N_2 \gg N_1$).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 8: MASTER SUMMARY TABLE & FORMULA CHEAT SHEET -->
+        <section id="table" class="scroll-mt-20 space-y-6">
+            <div class="border-b border-slate-800 pb-3">
+                <h2 class="text-xl sm:text-2xl font-hud font-bold text-white flex items-center gap-2">
+                    <span class="text-cyan-400">#07</span> MASTER FORMULA &amp; SYMBOL CHEAT SHEET
+                </h2>
+                <p class="text-xs font-mono text-slate-400">Keep this open on your phone or tablet during viva prep.</p>
+            </div>
+
+            <div class="hud-border rounded-xl overflow-x-auto bg-slate-900/80">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950/90 text-cyan-400 font-hud border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Concept</th>
+                            <th class="p-3">Symbol</th>
+                            <th class="p-3">Formula</th>
+                            <th class="p-3">Typical Units</th>
+                            <th class="p-3">Physical Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 font-mono text-slate-300">
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Resonance Condition</td>
+                            <td class="p-3 text-amber-400">$m$</td>
+                            <td class="p-3">$2nL = m\lambda$</td>
+                            <td class="p-3">Dimensionless</td>
+                            <td class="p-3">Integer mode count of half-waves in cavity</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Free Spectral Range (Freq)</td>
+                            <td class="p-3 text-cyan-400">$\text{FSR}_{\nu}$</td>
+                            <td class="p-3">$c / 2nL$</td>
+                            <td class="p-3">$\text{THz}$ or $\text{GHz}$</td>
+                            <td class="p-3">Frequency gap between consecutive modes</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Free Spectral Range (Wavelength)</td>
+                            <td class="p-3 text-cyan-400">$\Delta\lambda_{\text{FSR}}$</td>
+                            <td class="p-3">$\lambda^2 / 2nL$</td>
+                            <td class="p-3">$\text{nm}$</td>
+                            <td class="p-3">Wavelength gap between transmission peaks</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Coefficient of Finesse</td>
+                            <td class="p-3 text-purple-400">$F$</td>
+                            <td class="p-3">$4R / (1-R)^2$</td>
+                            <td class="p-3">Dimensionless</td>
+                            <td class="p-3">Reflectivity multiplier in Airy equation</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Cavity Finesse</td>
+                            <td class="p-3 text-purple-400">$\mathcal{F}$</td>
+                            <td class="p-3">$\pi\sqrt{R} / (1-R)$</td>
+                            <td class="p-3">Dimensionless</td>
+                            <td class="p-3">Sharpness of cavity resonance spikes</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Airy Transmission</td>
+                            <td class="p-3 text-emerald-400">$T(\lambda)$</td>
+                            <td class="p-3">$1 / [1 + F\sin^2(m\pi)]$</td>
+                            <td class="p-3">$0.0 \to 1.0$ ($0\% \to 100\%$)</td>
+                            <td class="p-3">Intensity fraction transmitted through cavity</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="p-3 font-bold text-white">Einstein Rate Equation</td>
+                            <td class="p-3 text-rose-400">$dN_2/dt$</td>
+                            <td class="p-3">$W N_1 - B_{21}\rho(N_2 - N_1) - A_{21}N_2$</td>
+                            <td class="p-3">$\text{atoms} / \text{sec}$</td>
+                            <td class="p-3">Net rate of excited quantum level population</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FOOTER & LAUNCH CTA -->
+        <footer class="pt-10 pb-16 border-t border-slate-800 text-center space-y-4">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="./index.html" class="px-6 py-3 rounded-lg bg-cyan-500 text-black font-hud font-bold text-sm hover:bg-cyan-400 transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center gap-2">
+                    <span>🚀 OPEN LIVE 3D SIMULATION NOW</span>
+                </a>
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="px-5 py-3 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-hud text-sm hover:bg-slate-800 transition-all">
+                    ↑ RETURN TO TOP
+                </button>
+            </div>
+            <p class="text-xs font-mono text-slate-500">
+                STARK INDUSTRIES // MARK VII QUANTUM OPTICS LABORATORY &bull; DESIGNED FOR UNIVERSITY VIVA &amp; TECHNICAL DEFENSE
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- INTERACTIVE JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Copy Pitch Script
+        function copyPitchText() {
+            const text = document.getElementById('pitch-text').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-btn-text');
+                const icon = document.getElementById('copy-icon');
+                btn.innerText = 'Copied to Clipboard!';
+                icon.innerText = '✅';
+                setTimeout(() => {
+                    btn.innerText = 'Copy Script';
+                    icon.innerText = '📋';
+                }, 2500);
+            });
+        }
+
+        // 2. Interactive 5-Stage Anatomy Data
+        const stageData = {
+            1: {
+                badge: 'STAGE 1',
+                title: 'ARC REACTOR (THE PUMPING SOURCE)',
+                lore: 'Miniaturized clean fusion reactor powering the suit repulsor coils with multi-gigawatt energy.',
+                physics: 'The <strong>Optical / Electrical Pumping Mechanism</strong> (W). Supplies external energy to lift electrons from ground state E₁ to upper level E₂.',
+                formula: 'Pumping Rate = W · N₁ (Required for N₂ > N₁)',
+                icon: '⚡',
+                name: 'PUMPING MECHANISM',
+                desc: 'Supplies continuous energy flux so atoms stay inverted above threshold.',
+                tip: 'If faculty asks what the Arc Reactor does physically, say: "It provides the external energy pumping W to create population inversion in the gain medium."'
+            },
+            2: {
+                badge: 'STAGE 2',
+                title: 'THE CORE CHAMBER (ACTIVE GAIN MEDIUM)',
+                lore: 'Internal crystalline chamber focusing Arc energy into coherent plasma excitation.',
+                physics: 'The <strong>Active Laser Medium</strong> (e.g. Nd:YAG or Ruby crystal). Contains quantum atoms with metastable states where population inversion occurs.',
+                formula: 'Amplification Gain g(ν) ∝ (N₂ - N₁)',
+                icon: '⚛',
+                name: 'ACTIVE GAIN MEDIUM',
+                desc: 'Houses 36 quantum atoms undergoing stimulated emission photon doubling.',
+                tip: 'Faculty love to ask: "What material is this?" Answer: "In real engineering, this is a solid-state Nd:YAG crystal or semiconductor gain chip."'
+            },
+            3: {
+                badge: 'STAGE 3',
+                title: 'REAR EMITTER (HIGH REFLECTOR MIRROR M₁)',
+                lore: 'Deep forearm reflector redirecting backward plasma cascades forward toward the hand.',
+                physics: 'The <strong>100% High-Reflector Cavity Mirror (M₁)</strong>. Has dielectric coating with R₁ ≈ 99.9% to bounce all photons back into the cavity.',
+                formula: 'Reflectivity R₁ ≈ 1.0 (Zero backward transmission)',
+                icon: '🪞',
+                name: 'HIGH REFLECTOR (99.9%)',
+                desc: 'Reflects all photons back through the active medium for recursive double-pass gain.',
+                tip: 'Faculty ask: "Why 99.9% and not 100%?" Answer: "Dielectric thin-film interference stacks approach 99.99%, minimizing thermal absorption losses."'
+            },
+            4: {
+                badge: 'STAGE 4',
+                title: 'PALM APERTURE (OUTPUT COUPLER MIRROR M₂)',
+                lore: 'Center palm iris focusing and releasing the repulsor discharge.',
+                physics: 'The <strong>Partially Transmissive Output Coupler (M₂)</strong>. Reflectivity R₂ ≈ 90%. Traps 90% of photons for feedback while releasing 10% as the beam.',
+                formula: 'Coupling Transmission T₂ = 1 - R₂ ≈ 0.10',
+                icon: '🔆',
+                name: 'OUTPUT COUPLER (R ≈ 90%)',
+                desc: 'Balances internal cavity feedback with external laser beam emission.',
+                tip: 'Remember: If M₂ were 100% reflective, the laser would be trapped forever and no beam could shoot out!'
+            },
+            5: {
+                badge: 'STAGE 5',
+                title: 'COHERENT OUTPUT BEAM (THE REPULSOR BLAST)',
+                lore: 'The devastating directed-energy blast fired at Tony Stark\'s enemies.',
+                physics: 'The <strong>Collimated, Monochromatic, Spatial-Coherent Laser Beam</strong> formed by stimulated emission wavefronts escaping the cavity.',
+                formula: 'Photon Avalanche: I(z) = I₀ · exp[(g - α)z]',
+                icon: '💥',
+                name: 'COHERENT LASER BLAST',
+                desc: 'Monochromatic, low-divergence stimulated emission laser wavefront.',
+                tip: 'Key viva distinction: "A flashlight emits random incoherent waves; this repulsor emits strictly in-phase, monochromatic coherent waves."'
+            }
+        };
+
+        function selectStage(num) {
+            const data = stageData[num];
+            document.getElementById('stage-badge').innerText = data.badge;
+            document.getElementById('stage-title').innerText = data.title;
+            document.getElementById('stage-lore').innerHTML = data.lore;
+            document.getElementById('stage-physics').innerHTML = data.physics;
+            document.getElementById('stage-formula').innerText = data.formula;
+            document.getElementById('stage-graphic-icon').innerText = data.icon;
+            document.getElementById('stage-graphic-name').innerText = data.name;
+            document.getElementById('stage-graphic-desc').innerText = data.desc;
+            document.getElementById('stage-viva-tip').innerHTML = `💡 <strong>Viva Tip:</strong> "${data.tip}"`;
+
+            // Update tab styles
+            for (let i = 1; i <= 5; i++) {
+                const tab = document.getElementById(`tab-stage-${i}`);
+                if (i === num) {
+                    tab.className = "p-3 rounded-lg border border-cyan-400 bg-cyan-950/60 text-left transition-all";
+                    tab.querySelector('div:first-child').className = "text-[10px] font-mono text-cyan-300";
+                } else {
+                    tab.className = "p-3 rounded-lg border border-slate-800 bg-slate-900/60 text-left hover:border-slate-700 transition-all";
+                    tab.querySelector('div:first-child').className = "text-[10px] font-mono text-slate-400";
+                }
+            }
+        }
+
+        // 3. Interactive Simulator State & Physics
+        let simState = {
+            L: 4.826,       // um
+            lambda: 743.6,  // nm
+            R: 0.37,        // fraction
+            tab: 'spectrum', // 'spectrum' or 'field'
+            waveTime: 0.0
+        };
+
+        function nmToRGB(wl) {
+            let r=0, g=0, b=0;
+            if (wl >= 380 && wl < 440) { r = -(wl - 440) / (440 - 380); b = 1.0; }
+            else if (wl >= 440 && wl < 490) { g = (wl - 440) / (490 - 440); b = 1.0; }
+            else if (wl >= 490 && wl < 510) { g = 1.0; b = -(wl - 510) / (510 - 490); }
+            else if (wl >= 510 && wl < 580) { r = (wl - 510) / (580 - 510); g = 1.0; }
+            else if (wl >= 580 && wl < 645) { r = 1.0; g = -(wl - 645) / (645 - 580); }
+            else if (wl >= 645 && wl <= 780) { r = 1.0; }
+            else { r = 0.8; g = 0.2; b = 0.2; }
+            return `rgb(${Math.round(r*255)}, ${Math.round(g*255)}, ${Math.round(b*255)})`;
+        }
+
+        function updateSimCalculations() {
+            const L_nm = simState.L * 1000;
+            const m = (2 * L_nm) / simState.lambda;
+            const F = (4 * simState.R) / Math.pow(1 - simState.R, 2);
+            const sinTerm = Math.sin(m * Math.PI);
+            const T = 1.0 / (1.0 + F * Math.pow(sinTerm, 2));
+            const fsrTHz = (299792458 / (2 * simState.L * 1e-6)) / 1e12;
+            const fsrNm = (simState.lambda * simState.lambda) / (2 * L_nm);
+            const colorCss = nmToRGB(simState.lambda);
+
+            // Update Labels
+            document.getElementById('lbl-sim-l').innerText = `${simState.L.toFixed(3)} µm`;
+            document.getElementById('lbl-sim-lambda').innerText = `${simState.lambda.toFixed(1)} nm`;
+            document.getElementById('lbl-sim-lambda').style.color = colorCss;
+            document.getElementById('wavelength-color-dot').style.backgroundColor = colorCss;
+            document.getElementById('lbl-sim-r').innerText = `${Math.round(simState.R * 100)}%`;
+
+            // Update Telemetry
+            document.getElementById('sim-val-m').innerText = m.toFixed(3);
+            document.getElementById('sim-val-fsr-thz').innerText = `${fsrTHz.toFixed(2)} THz`;
+            document.getElementById('sim-val-fsr-nm').innerText = `${fsrNm.toFixed(1)} nm`;
+            document.getElementById('sim-val-finesse').innerText = F.toFixed(2);
+            document.getElementById('sim-val-trans').innerText = `${(T * 100).toFixed(1)}%`;
+
+            // Update Live Badge
+            const isResonant = Math.abs(m - Math.round(m)) < 0.035;
+            const badge = document.getElementById('live-resonance-badge');
+            const badgeText = document.getElementById('live-badge-text');
+            const transBadge = document.getElementById('live-trans-badge');
+
+            transBadge.innerText = `Transmission: ${(T * 100).toFixed(1)}%`;
+            if (isResonant) {
+                badge.className = "px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                badgeText.innerText = `RESONANCE (m = ${Math.round(m)}) ✨`;
+            } else {
+                badge.className = "px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-rose-950/90 text-rose-300 border border-rose-500/50 flex items-center gap-1.5 shadow-[0_0_10px_rgba(244,63,94,0.3)]";
+                badgeText.innerText = `ANTI-RESONANCE (m = ${m.toFixed(2)}) ⚠️`;
+            }
+
+            drawSimCanvas(m, F, T, colorCss);
+        }
+
+        function drawSimCanvas(m, F, T, colorCss) {
+            const canvas = document.getElementById('sim-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+            if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+                canvas.width = Math.floor(w * dpr);
+                canvas.height = Math.floor(h * dpr);
+            }
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, w, h);
+
+            if (simState.tab === 'spectrum') {
+                // DRAW TRANSMISSION SPECTRUM
+                const padL = 45, padR = 25, padT = 30, padB = 25;
+                const plotW = w - padL - padR;
+                const plotH = h - padT - padB;
+
+                // Axes & Grid
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1;
+                [0, 0.25, 0.5, 0.75, 1.0].forEach(p => {
+                    const y = padT + plotH * (1.0 - p);
+                    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+                    ctx.fillStyle = '#64748b'; ctx.font = '9px monospace'; ctx.fillText(`${Math.round(p*100)}%`, 10, y + 3);
+                });
+
+                [400, 500, 600, 700, 800].forEach(wl => {
+                    const x = padL + ((wl - 400) / 400) * plotW;
+                    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+                    ctx.fillStyle = '#64748b'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+                    ctx.fillText(`${wl}nm`, x, padT + plotH + 16);
+                });
+
+                // Compute Airy Curve Points
+                const pts = [];
+                const samples = Math.floor(plotW * 2);
+                for (let i = 0; i <= samples; i++) {
+                    const lam = 400 + (i / samples) * 400;
+                    const mVal = (2 * simState.L * 1000) / lam;
+                    const sinVal = Math.sin(mVal * Math.PI);
+                    const trans = 1.0 / (1.0 + F * sinVal * sinVal);
+                    const x = padL + (i / samples) * plotW;
+                    const y = padT + plotH * (1.0 - trans);
+                    pts.push({ x, y });
+                }
+
+                // Fill Gradient
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x, pts[0].y);
+                pts.forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.lineTo(padL + plotW, padT + plotH);
+                ctx.lineTo(padL, padT + plotH);
+                ctx.closePath();
+                const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+                grad.addColorStop(0, 'rgba(0, 240, 255, 0.28)');
+                grad.addColorStop(1, 'rgba(0, 240, 255, 0.01)');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Stroke
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x, pts[0].y);
+                pts.forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 2.0;
+                ctx.stroke();
+
+                // Active Wavelength Marker
+                const curX = padL + ((simState.lambda - 400) / 400) * plotW;
+                const curY = padT + plotH * (1.0 - T);
+
+                ctx.strokeStyle = colorCss;
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(curX, padT); ctx.lineTo(curX, padT + plotH); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Marker dot
+                ctx.fillStyle = colorCss;
+                ctx.beginPath(); ctx.arc(curX, curY, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+            } else {
+                // DRAW STANDING WAVE FIELD OVERLAY
+                const padL = 40, padR = 40;
+                const plotW = w - padL - padR;
+                const midY = h / 2;
+                const amp = h * 0.32;
+                const kL = m * Math.PI;
+
+                // Mirrors M1 and M2
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(padL, 20); ctx.lineTo(padL, h - 20); ctx.stroke();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.beginPath(); ctx.moveTo(padL + plotW, 20); ctx.lineTo(padL + plotW, h - 20); ctx.stroke();
+
+                ctx.font = '9px monospace'; ctx.fillStyle = '#f59e0b'; ctx.textAlign = 'center';
+                ctx.fillText('M1 (High Refl)', padL, h - 6);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillText('M2 (Output)', padL + plotW, h - 6);
+
+                // Waves: Forward (Cyan), Reflected (Rose), Superposition
+                const steps = 200;
+                ctx.lineWidth = 1.2;
+                
+                // Forward Wave
+                ctx.beginPath();
+                for (let i = 0; i <= steps; i++) {
+                    const u = i / steps;
+                    const x = padL + u * plotW;
+                    const y = midY - amp * 0.45 * Math.cos(u * kL - simState.waveTime);
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)'; ctx.stroke();
+
+                // Standing wave superposition
+                ctx.beginPath();
+                for (let i = 0; i <= steps; i++) {
+                    const u = i / steps;
+                    const x = padL + u * plotW;
+                    const efwd = Math.cos(u * kL - simState.waveTime);
+                    const erefl = Math.sqrt(simState.R) * Math.cos(-u * kL - simState.waveTime - 2*kL);
+                    const etot = (efwd + erefl) / (1 + Math.sqrt(simState.R));
+                    const y = midY - amp * Math.sqrt(T) * etot;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = colorCss; ctx.lineWidth = 2.5; ctx.stroke();
+
+                // Stationary Nodes (White Dots)
+                const numNodes = Math.floor(m);
+                ctx.fillStyle = '#ffffff';
+                for (let k = 0; k <= numNodes; k++) {
+                    const uNode = k / m;
+                    if (uNode <= 1.0) {
+                        ctx.beginPath();
+                        ctx.arc(padL + uNode * plotW, midY, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            ctx.restore();
+        }
+
+        function setSimTab(tab) {
+            simState.tab = tab;
+            document.getElementById('btn-tab-spectrum').className = tab === 'spectrum' ? 'px-3 py-1 rounded text-xs font-hud font-bold bg-cyan-500 text-black' : 'px-3 py-1 rounded text-xs font-hud font-bold bg-slate-800 text-slate-300 hover:text-white';
+            document.getElementById('btn-tab-field').className = tab === 'field' ? 'px-3 py-1 rounded text-xs font-hud font-bold bg-cyan-500 text-black' : 'px-3 py-1 rounded text-xs font-hud font-bold bg-slate-800 text-slate-300 hover:text-white';
+            updateSimCalculations();
+        }
+
+        // Apply Experiment Presets
+        function applyPreset(name) {
+            if (name === 'resonance') {
+                const targetM = Math.max(1, Math.round((2 * simState.L * 1000) / simState.lambda));
+                simState.L = (targetM * simState.lambda) / 2000;
+                document.getElementById('sim-slider-l').value = simState.L.toFixed(3);
+            } else if (name === 'highFinesse') {
+                simState.R = 0.92;
+                document.getElementById('sim-slider-r').value = 92;
+            } else if (name === 'greenLaser') {
+                simState.lambda = 532.0;
+                document.getElementById('sim-slider-lambda').value = 532.0;
+                // Snap L to resonance for green laser
+                const targetM = Math.max(1, Math.round((2 * simState.L * 1000) / 532.0));
+                simState.L = (targetM * 532.0) / 2000;
+                document.getElementById('sim-slider-l').value = simState.L.toFixed(3);
+            } else if (name === 'reset') {
+                simState.L = 4.826;
+                simState.lambda = 743.6;
+                simState.R = 0.37;
+                document.getElementById('sim-slider-l').value = 4.826;
+                document.getElementById('sim-slider-lambda').value = 743.6;
+                document.getElementById('sim-slider-r').value = 37;
+            }
+            updateSimCalculations();
+        }
+
+        // Interactive Sliders Event Wiring
+        document.getElementById('sim-slider-l').addEventListener('input', e => {
+            simState.L = parseFloat(e.target.value);
+            updateSimCalculations();
+        });
+        document.getElementById('sim-slider-lambda').addEventListener('input', e => {
+            simState.lambda = parseFloat(e.target.value);
+            updateSimCalculations();
+        });
+        document.getElementById('sim-slider-r').addEventListener('input', e => {
+            simState.R = parseFloat(e.target.value) / 100;
+            updateSimCalculations();
+        });
+
+        // Click on Spectrum Canvas to directly tune wavelength
+        document.getElementById('sim-canvas').addEventListener('click', e => {
+            if (simState.tab !== 'spectrum') return;
+            const rect = e.target.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const padL = 45, padR = 25;
+            const plotW = rect.width - padL - padR;
+            const ratio = Math.max(0, Math.min(1, (clickX - padL) / plotW));
+            const newLambda = Math.round((400 + ratio * 400) * 10) / 10;
+            simState.lambda = newLambda;
+            document.getElementById('sim-slider-lambda').value = newLambda;
+            updateSimCalculations();
+        });
+
+        // Animation Loop for standing wave motion
+        function simAnimLoop() {
+            simState.waveTime += 0.08;
+            if (simState.tab === 'field') {
+                updateSimCalculations();
+            }
+            requestAnimationFrame(simAnimLoop);
+        }
+        requestAnimationFrame(simAnimLoop);
+
+        // 4. Viva QA Flashcard Toggle & Filter
+        function toggleAnswer(id) {
+            const ans = document.getElementById(`qa-ans-${id}`);
+            const arrow = document.getElementById(`qa-arrow-${id}`);
+            if (ans.classList.contains('hidden')) {
+                ans.classList.remove('hidden');
+                arrow.innerText = '▲';
+            } else {
+                ans.classList.add('hidden');
+                arrow.innerText = '▼';
+            }
+        }
+
+        function filterQA(category) {
+            const items = document.querySelectorAll('.qa-item');
+            items.forEach(el => {
+                if (category === 'all' || el.classList.contains(category)) {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            ['all', 'physics', 'optics', 'code'].forEach(c => {
+                const btn = document.getElementById(`btn-filter-${c}`);
+                if (c === category) {
+                    btn.className = "px-2.5 py-1 rounded bg-amber-500 text-black font-bold";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:text-white";
+                }
+            });
+        }
+
+        // Initialize default view
+        updateSimCalculations();
+    </script>
+</body>
+</html>
